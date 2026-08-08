@@ -148,6 +148,11 @@ tbody tr:last-child td{border-bottom:none;}
 .badge-progress{background:var(--amber-soft);color:var(--amber);}
 .badge-ready{background:var(--teal-soft);color:var(--teal);}
 .badge-delivered{background:var(--violet-soft);color:var(--violet);}
+.prio-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;}
+.prio-low{background:#EEF2F7;color:#64748B;}
+.prio-normal{background:var(--primary-soft);color:var(--primary);}
+.prio-high{background:var(--amber-soft);color:#8a6110;}
+.prio-urgent{background:var(--red-soft);color:var(--red);}
 
 /* ---------- filter bar ---------- */
 .filterbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;background:var(--card);padding:14px;border-radius:var(--radius-m);border:1px solid var(--line);box-shadow:var(--shadow);}
@@ -360,6 +365,7 @@ body.perm-no-money .money-only{display:none !important;}
       <button class="navlink" data-view="orders"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>الأوردرات</button>
       <button class="navlink" data-view="customers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c1-3.8 4-6 7-6s6 2.2 7 6"/></svg>العملاء</button>
       <button class="navlink" data-view="products"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>المنتجات</button>
+      <button class="navlink" data-view="expenses"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>المصاريف</button>
       <button class="navlink" data-view="reports"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>التقارير</button>
       <button class="navlink" data-view="users"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 20c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5"/><circle cx="18" cy="8" r="2.4"/><path d="M17 14.3c2.3.5 4 2.1 4.5 4.2"/></svg>المستخدمين</button>
       <button class="navlink" data-view="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>الإعدادات</button>
@@ -389,6 +395,7 @@ body.perm-no-money .money-only{display:none !important;}
       <section class="view active" id="view-dashboard">
         <div class="page-head"><div><h1>لوحة التحكم</h1><div class="breadcrumb" id="dash-greeting">أهلاً بيك 👋 — نظرة سريعة على أداء الورشة</div></div></div>
         <div class="grid-stats" id="dash-stats"></div>
+        <div class="grid-stats grid-stats-2 money-only" id="dash-stats-expenses" style="margin-bottom:14px;"></div>
         <div class="grid-stats grid-stats-3" id="dash-stats-2"></div>
         <div class="grid-2">
           <div class="panel">
@@ -422,10 +429,11 @@ body.perm-no-money .money-only{display:none !important;}
         <div class="filterbar">
           <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="orders-search" placeholder="ابحث بالاسم أو رقم الهاتف أو المنتج..."></div>
           <select id="orders-status-select"><option value="all">كل الحالات</option><option value="New">جديد</option><option value="In Progress">قيد التنفيذ</option><option value="Ready">جاهز</option><option value="Delivered">تم التسليم</option></select>
+          <select id="orders-priority-select"><option value="all">كل الأولويات</option><option value="Urgent">عاجل</option><option value="High">مهم</option><option value="Normal">متوسط</option><option value="Low">عادي</option></select>
           <select id="orders-gov-select"><option value="all">كل المحافظات</option></select>
         </div>
         <div class="panel" style="padding-top:6px;">
-          <div class="table-wrap"><table><thead><tr><th>#</th><th>العميل</th><th>الهاتف</th><th>المنتج</th><th class="money-only">الإجمالي</th><th>الحالة</th><th>تاريخ الطلب</th><th>إجراءات</th></tr></thead><tbody id="orders-table"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>#</th><th>العميل</th><th>الهاتف</th><th>المنتج</th><th class="money-only">الإجمالي</th><th>الأولوية</th><th>الحالة</th><th>تاريخ الطلب</th><th>إجراءات</th></tr></thead><tbody id="orders-table"></tbody></table></div>
           <div class="empty" id="orders-empty" style="display:none;"><b>لا يوجد أوردرات</b><p>ابدأ بإضافة أول أوردر للورشة</p></div>
           <div class="pagination" id="orders-pagination"></div>
         </div>
@@ -446,10 +454,12 @@ body.perm-no-money .money-only{display:none !important;}
           <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>بنود الطلب <span id="od-items-progress" class="hint" style="font-weight:600;margin-right:auto;"></span></div>
           <div class="od-items-list" id="od-items"></div>
         </div>
-        <div class="grid-3">
-          <div class="panel money-only" id="od-payment-panel"><div class="card-title">بيانات الدفع</div><div id="od-payment"></div></div>
+        <div class="grid-2-even">
           <div class="panel"><div class="card-title">بيانات الشحن</div><div id="od-shipping"></div></div>
-          <div class="panel"><div class="card-title">حالة الأوردر</div><select id="quick-status"></select></div>
+          <div class="panel">
+            <div class="card-title">حالة الأوردر</div><select id="quick-status"></select>
+            <div class="card-title" style="margin-top:16px;">الأولوية / الأهمية</div><select id="quick-priority"></select>
+          </div>
         </div>
         <div class="panel"><div class="card-title">ملاحظات عامة</div><div id="od-notes"></div></div>
       </section>
@@ -525,6 +535,26 @@ body.perm-no-money .money-only{display:none !important;}
             <div class="dropzone"><input type="file" id="pf-image-input" accept="image/*"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg><p>اضغط لرفع صورة أو اسحبها هنا</p><span>PNG, JPG حتى 10 ميجا</span></div>
             <div id="pf-image-preview" style="margin-top:12px;"></div>
           </div>
+        </div>
+      </section>
+
+      <!-- EXPENSES -->
+      <section class="view" id="view-expenses">
+        <div class="page-head"><div><h1>المصاريف</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; المصاريف</div></div><button class="btn btn-primary" id="btn-new-expense"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>مصروف جديد</button></div>
+        <div class="grid-stats grid-stats-2" id="expenses-stats" style="margin-bottom:16px;"></div>
+        <div class="filterbar">
+          <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="expenses-search" placeholder="ابحث بالبيان أو الفئة..."></div>
+          <select id="expenses-category-select"><option value="all">كل الفئات</option></select>
+          <div class="chip-group" id="expenses-range">
+            <button class="chip active" data-range="all">كل الفترة</button>
+            <button class="chip" data-range="month">هذا الشهر</button>
+            <button class="chip" data-range="today">اليوم</button>
+          </div>
+        </div>
+        <div class="panel" style="padding-top:6px;">
+          <div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الفئة</th><th>البيان</th><th class="money-only">القيمة</th><th>إجراءات</th></tr></thead><tbody id="expenses-table"></tbody></table></div>
+          <div class="empty" id="expenses-empty" style="display:none;"><b>لا يوجد مصاريف مسجلة</b><p>ابدأ بتسجيل أول مصروف للورشة زي تكلفة القماش أو الخيوط أو أجور العمال</p></div>
+          <div class="pagination" id="expenses-pagination"></div>
         </div>
       </section>
 
@@ -651,11 +681,11 @@ const localStorageBackend = {
 };
 
 const appStorage = SUPABASE_CONFIGURED ? supabaseStorage : localStorageBackend;
-const DB = { customers: [], products: [], orders: [], users: [] };
+const DB = { customers: [], products: [], orders: [], users: [], expenses: [] };
 let SETTINGS = { workshopName:'الزهراء', phone:'01116730673', address:'', currency:'ج.م' };
 
 async function loadAll(){
-  for(const key of ['customers','products','orders','users']){
+  for(const key of ['customers','products','orders','users','expenses']){
     try{ const r = await appStorage.get(key, true); DB[key] = r && r.value ? JSON.parse(r.value) : []; }
     catch(e){ DB[key] = []; }
   }
@@ -688,20 +718,20 @@ const ROLE_LABEL = {
 const ROLE_PERMS = {
   Admin: {
     home: 'dashboard',
-    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','reports','users','settings'],
+    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','reports','users','settings'],
     money: true,
     createOrder: true, editOrder: true, deleteOrder: true,
     manageCustomers: true, manageProducts: true,
-    manageUsers: true, manageSettings: true,
+    manageUsers: true, manageSettings: true, manageExpenses: true,
     markItemDone: true, changeStatus: true
   },
   'Order Manager': {
     home: 'dashboard',
-    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','reports'],
+    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','reports'],
     money: true,
     createOrder: true, editOrder: true, deleteOrder: true,
     manageCustomers: true, manageProducts: true,
-    manageUsers: false, manageSettings: false,
+    manageUsers: false, manageSettings: false, manageExpenses: true,
     markItemDone: true, changeStatus: true
   },
   Production: {
@@ -710,7 +740,7 @@ const ROLE_PERMS = {
     money: false,
     createOrder: false, editOrder: false, deleteOrder: false,
     manageCustomers: false, manageProducts: false,
-    manageUsers: false, manageSettings: false,
+    manageUsers: false, manageSettings: false, manageExpenses: false,
     markItemDone: true, changeStatus: true
   }
 };
@@ -756,6 +786,8 @@ function applyRoleAccess(){
   if(btnNewProd) btnNewProd.style.display = p.manageProducts ? '' : 'none';
   const btnNewUser = document.getElementById('btn-new-user');
   if(btnNewUser) btnNewUser.style.display = p.manageUsers ? '' : 'none';
+  const btnNewExpense = document.getElementById('btn-new-expense');
+  if(btnNewExpense) btnNewExpense.style.display = p.manageExpenses ? '' : 'none';
 }
 async function getSession(){
   try{ const r = await localStorageBackend.get('session'); return r && r.value ? JSON.parse(r.value) : null; }catch(e){ return null; }
@@ -870,7 +902,13 @@ const STATUS_LABEL = {New:'جديد','In Progress':'قيد التنفيذ',Ready
 const STATUS_BADGE = {New:'badge-new','In Progress':'badge-progress',Ready:'badge-ready',Delivered:'badge-delivered'};
 const STATUS_COLOR = {New:'#2F6FED','In Progress':'#F5A524',Ready:'#12B981',Delivered:'#8B5CF6'};
 const STATUS_ORDER = ['New','In Progress','Ready','Delivered'];
+const PRIORITY_ORDER = ['Urgent','High','Normal','Low'];
+const PRIORITY_LABEL = {Urgent:'عاجل', High:'مهم', Normal:'متوسط', Low:'عادي'};
+const PRIORITY_BADGE = {Urgent:'prio-urgent', High:'prio-high', Normal:'prio-normal', Low:'prio-low'};
+const PRIORITY_RANK = {Urgent:4, High:3, Normal:2, Low:1};
+function normalizePriority(p){ return PRIORITY_LABEL[p] ? p : 'Normal'; }
 function badge(status){ return '<span class="badge '+STATUS_BADGE[status]+'">'+STATUS_LABEL[status]+'</span>'; }
+function priorityBadge(p){ p = normalizePriority(p); return '<span class="prio-badge '+PRIORITY_BADGE[p]+'">'+PRIORITY_LABEL[p]+'</span>'; }
 function getCustomer(id){ return DB.customers.find(c=>c.id===id); }
 function customerOrders(id){ return DB.orders.filter(o=>o.customerId===id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); }
 function initials(name){ return (name||'?').trim().slice(0,1); }
@@ -880,7 +918,7 @@ let editingOrderId = null, editingProductId = null;
 const PAGE_META = {
   dashboard:'dashboard', orders:'orders', 'order-details':'order-details', 'order-form':'order-form',
   customers:'customers', 'customer-details':'customer-details', products:'products', 'product-form':'product-form',
-  reports:'reports', users:'users', settings:'settings'
+  expenses:'expenses', reports:'reports', users:'users', settings:'settings'
 };
 function goTo(view){
   if(currentUser && !canView(view)){
@@ -899,6 +937,7 @@ function goTo(view){
   if(view==='orders') renderOrdersList();
   if(view==='customers') renderCustomersList();
   if(view==='products') renderProductsList();
+  if(view==='expenses') renderExpensesList();
   if(view==='reports') renderReports();
   if(view==='users') renderUsersList();
   if(view==='settings') renderSettings();
@@ -1187,8 +1226,9 @@ async function openOrderForm(existingId){
   document.getElementById('of-other-fields').innerHTML = `
     <div class="field-row">
       <div class="field"><label>الحالة</label><select id="f-status">${STATUS_ORDER.map(s=>'<option value="'+s+'" '+(o.status===s?'selected':'')+'>'+STATUS_LABEL[s]+'</option>').join('')}</select></div>
-      <div class="field"><label>موعد التسليم المتوقع</label><input id="f-duedate" type="date" value="${o.dueDate||''}"></div>
+      <div class="field"><label>الأولوية / الأهمية</label><select id="f-priority">${PRIORITY_ORDER.map(p=>'<option value="'+p+'" '+(normalizePriority(o.priority)===p?'selected':'')+'>'+PRIORITY_LABEL[p]+'</option>').join('')}</select></div>
     </div>
+    <div class="field"><label>موعد التسليم المتوقع</label><input id="f-duedate" type="date" value="${o.dueDate||''}"></div>
     <div class="field"><label>ملاحظات عامة على الأوردر</label><textarea id="f-notes" placeholder="أي تفاصيل عامة...">${o.notes||''}</textarea></div>`;
 
   const sel = document.getElementById('f-customer');
@@ -1244,6 +1284,7 @@ function readOrderForm(existing){
     remaining: Math.max(total - deposit, 0),
     shippingType: document.getElementById('f-shiptype').value, shippingPrice: Number(document.getElementById('f-shipprice').value)||0,
     status: document.getElementById('f-status').value, dueDate: document.getElementById('f-duedate').value,
+    priority: normalizePriority(document.getElementById('f-priority').value),
     notes: document.getElementById('f-notes').value.trim(),
     createdAt: existing ? existing.createdAt : todayISO(), deliveredAt: existing ? existing.deliveredAt : null,
   };
@@ -1269,14 +1310,20 @@ document.getElementById('of-save').addEventListener('click', async ()=>{
 });
 
 /* ================= ORDERS LIST ================= */
-let orderFilterStatus='all', orderFilterGov='all', orderSearchTerm='', ordersPage=1;
+let orderFilterStatus='all', orderFilterGov='all', orderFilterPriority='all', orderSearchTerm='', ordersPage=1;
 const PER_PAGE = 6;
 document.getElementById('orders-search').addEventListener('input', e=>{ orderSearchTerm=e.target.value.trim(); ordersPage=1; renderOrdersList(); });
 document.getElementById('orders-status-select').addEventListener('change', e=>{ orderFilterStatus=e.target.value; ordersPage=1; renderOrdersList(); });
+document.getElementById('orders-priority-select').addEventListener('change', e=>{ orderFilterPriority=e.target.value; ordersPage=1; renderOrdersList(); });
 document.getElementById('orders-gov-select').addEventListener('change', e=>{ orderFilterGov=e.target.value; ordersPage=1; renderOrdersList(); });
 function filteredOrders(){
-  let list = DB.orders.slice().sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+  let list = DB.orders.slice().sort((a,b)=>{
+    const pr = (PRIORITY_RANK[normalizePriority(b.priority)]||0) - (PRIORITY_RANK[normalizePriority(a.priority)]||0);
+    if(pr) return pr;
+    return new Date(b.createdAt)-new Date(a.createdAt);
+  });
   if(orderFilterStatus!=='all') list = list.filter(o=>o.status===orderFilterStatus);
+  if(orderFilterPriority!=='all') list = list.filter(o=>normalizePriority(o.priority)===orderFilterPriority);
   if(orderFilterGov!=='all') list = list.filter(o=>{ const c=getCustomer(o.customerId); return c && c.governorate===orderFilterGov; });
   if(orderSearchTerm){ const q = orderSearchTerm.toLowerCase(); list = list.filter(o=>{ const c = getCustomer(o.customerId); return (c&&c.name.toLowerCase().includes(q)) || (c&&c.phone.includes(q)) || orderSearchBlob(o).includes(q); }); }
   return list;
@@ -1286,6 +1333,8 @@ function renderOrdersList(){
   const govs = [...new Set(DB.customers.map(c=>c.governorate).filter(Boolean))];
   govSel.innerHTML = '<option value="all">كل المحافظات</option>' + govs.map(g=>'<option value="'+g+'">'+g+'</option>').join('');
   govSel.value = orderFilterGov;
+  const prioSel = document.getElementById('orders-priority-select');
+  if(prioSel) prioSel.value = orderFilterPriority;
   const all = filteredOrders();
   const list = all.slice((ordersPage-1)*PER_PAGE, ordersPage*PER_PAGE);
   const tbody = document.getElementById('orders-table');
@@ -1299,6 +1348,7 @@ function renderOrdersList(){
       <td class="muted num">${c?c.phone:'—'}</td>
       <td>${orderProductLabel(o)}</td>
       <td class="num money-only">${fmtMoney(orderTotal(o))}</td>
+      <td>${priorityBadge(o.priority)}</td>
       <td>${badge(o.status)}</td>
       <td class="muted">${fmtDate(o.createdAt)}</td>
       <td><div class="row-actions">
@@ -1320,7 +1370,7 @@ async function renderOrderDetails(id){
   const c = getCustomer(o.customerId);
   const items = orderItems(o);
   document.getElementById('od-title').textContent = 'أوردر #'+o.id.slice(-4).toUpperCase();
-  document.getElementById('od-crumb').textContent = '#'+o.id.slice(-4).toUpperCase();
+  document.getElementById('od-crumb').innerHTML = '#'+o.id.slice(-4).toUpperCase()+' · '+priorityBadge(o.priority);
 
   const curIdx = STATUS_ORDER.indexOf(o.status);
   document.getElementById('order-stepper').innerHTML = STATUS_ORDER.map((s,i)=>`
@@ -1343,7 +1393,6 @@ async function renderOrderDetails(id){
 
   itemsBox.innerHTML = items.map((it, idx)=>{
     const imgs = imagesForItem(imagesMap, it.id, idx);
-    const lineTotal = (Number(it.price)||0)*(Number(it.quantity)||1);
     return `<div class="order-item-sec ${it.done?'is-done':''}" data-item-id="${it.id}">
       <div class="order-item-head">
         <div class="left">
@@ -1369,9 +1418,6 @@ async function renderOrderDetails(id){
           <div class="kv"><span>اللون</span><span>${it.color||'—'}</span></div>
           <div class="kv"><span>المقاس</span><span>${it.size||'—'}</span></div>
           <div class="kv"><span>الكمية</span><span>${it.quantity||1}</span></div>
-          ${can('money')?`<div class="kv money-only"><span>سعر القطعة</span><span>${fmtMoney(it.price)}</span></div>
-          <div class="kv money-only"><span>إجمالي البند</span><span>${fmtMoney(lineTotal)}</span></div>
-          ${it.cost?`<div class="kv money-only"><span>تكلفة الخامة</span><span>${fmtMoney(it.cost)}</span></div>`:''}`:''}
           ${it.notes?`<div style="margin-top:10px;font-size:13px;line-height:1.7;color:var(--ink-soft);">${it.notes}</div>`:''}
         </div>
       </div>
@@ -1398,21 +1444,8 @@ async function renderOrderDetails(id){
     });
   });
 
-  const total = orderTotal(o);
-  const costSum = orderCostTotal(o);
-  if(can('money')){
-    document.getElementById('od-payment').innerHTML = `
-      <div class="kv"><span>عدد البنود</span><span>${items.length}</span></div>
-      <div class="kv"><span>الإجمالي</span><span>${fmtMoney(total)}</span></div>
-      <div class="kv"><span>العربون</span><span>${fmtMoney(o.deposit)}</span></div>
-      <div class="kv"><span>المتبقي</span><span>${fmtMoney(o.remaining!=null?o.remaining:Math.max(total-(Number(o.deposit)||0),0))}</span></div>
-      ${costSum?'<div class="kv"><span>إجمالي تكلفة الخامات</span><span>'+fmtMoney(costSum)+'</span></div>':''}`;
-  }else{
-    document.getElementById('od-payment').innerHTML = `<div class="kv"><span>عدد البنود</span><span>${items.length}</span></div>`;
-  }
   document.getElementById('od-shipping').innerHTML = `
     <div class="kv"><span>نوع الشحن</span><span>${o.shippingType}</span></div>
-    ${can('money')?`<div class="kv money-only"><span>سعر الشحن</span><span>${fmtMoney(o.shippingPrice)}</span></div>`:''}
     <div class="kv"><span>موعد التسليم</span><span>${o.dueDate?fmtDate(o.dueDate):'—'}</span></div>`;
   document.getElementById('od-notes').innerHTML = o.notes ? '<p style="font-size:13.5px;line-height:1.8;margin:0;">'+o.notes+'</p>' : '<p class="hint">لا يوجد ملاحظات</p>';
 
@@ -1595,6 +1628,83 @@ function renderProductsList(){
   renderPagination('products-pagination', all.length, PER_PAGE, productsPage, p=>{ productsPage=p; renderProductsList(); });
 }
 
+/* ================= EXPENSES ================= */
+const DEFAULT_EXPENSE_CATEGORIES = ['تكلفة القماش','خيوط','ركامات وإكسسوارات','أجور عمال','كهرباء'];
+function expenseCategories(){
+  const set = new Set(DEFAULT_EXPENSE_CATEGORIES);
+  DB.expenses.forEach(x=>{ if(x.category) set.add(x.category); });
+  return [...set];
+}
+function expenseTotal(list){ return list.reduce((s,x)=>s+(Number(x.amount)||0),0); }
+let expenseSearchTerm='', expensesPage=1, expenseCategoryFilter='all', expenseRange='all';
+document.getElementById('expenses-search').addEventListener('input', e=>{ expenseSearchTerm=e.target.value.trim(); expensesPage=1; renderExpensesList(); });
+document.getElementById('expenses-category-select').addEventListener('change', e=>{ expenseCategoryFilter=e.target.value; expensesPage=1; renderExpensesList(); });
+document.getElementById('expenses-range').addEventListener('click', e=>{ const chip=e.target.closest('.chip'); if(!chip) return; document.querySelectorAll('#expenses-range .chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); expenseRange=chip.dataset.range; expensesPage=1; renderExpensesList(); });
+document.getElementById('btn-new-expense').addEventListener('click', ()=>{ if(!can('manageExpenses')) return denyAccess(); openExpenseModal(null); });
+function expenseFormBody(x){
+  x = x||{};
+  const opts = expenseCategories().map(c=>'<option value="'+c+'">').join('');
+  return `<div class="field"><label>الفئة</label><input id="ef-category" list="expense-cats" value="${x.category||''}" placeholder="مثال: تكلفة القماش (تقدر تكتب فئة جديدة)"><datalist id="expense-cats">${opts}</datalist></div>
+    <div class="field-row">
+      <div class="field"><label>القيمة</label><input id="ef-amount" type="number" min="0" value="${x.amount??''}" placeholder="0"></div>
+      <div class="field"><label>التاريخ</label><input id="ef-date" type="date" value="${(x.date||todayISO()).slice(0,10)}"></div>
+    </div>
+    <div class="field" style="margin-bottom:0;"><label>البيان / ملاحظات</label><textarea id="ef-note" placeholder="تفاصيل المصروف...">${x.note||''}</textarea></div>`;
+}
+function openExpenseModal(existing){
+  if(!can('manageExpenses')) return denyAccess();
+  openModal(existing?'تعديل المصروف':'مصروف جديد', expenseFormBody(existing),
+    '<button class="btn btn-ghost" id="cancel">إلغاء</button><button class="btn btn-primary" id="save">حفظ</button>');
+  document.getElementById('cancel').onclick = closeModal;
+  document.getElementById('save').onclick = async ()=>{
+    const category = document.getElementById('ef-category').value.trim();
+    const amount = Number(document.getElementById('ef-amount').value);
+    const date = document.getElementById('ef-date').value || todayISO().slice(0,10);
+    const note = document.getElementById('ef-note').value.trim();
+    if(!category){ showToast('من فضلك أدخل فئة المصروف'); return; }
+    if(!amount || amount<=0){ showToast('من فضلك أدخل قيمة صحيحة للمصروف'); return; }
+    if(existing){ Object.assign(existing, {category, amount, date, note}); }
+    else{ DB.expenses.push({id:uid(), category, amount, date, note, createdAt:todayISO()}); }
+    await persist('expenses'); closeModal(); showToast('تم الحفظ'); renderExpensesList();
+  };
+}
+function expenseFilteredList(){
+  let list = DB.expenses.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(expenseRange==='today') list = list.filter(x=>isToday(x.date));
+  else if(expenseRange==='month') list = list.filter(x=>isThisMonth(x.date));
+  if(expenseCategoryFilter!=='all') list = list.filter(x=>x.category===expenseCategoryFilter);
+  if(expenseSearchTerm){ const q=expenseSearchTerm.toLowerCase(); list = list.filter(x=>(x.category||'').toLowerCase().includes(q) || (x.note||'').toLowerCase().includes(q)); }
+  return list;
+}
+function renderExpensesList(){
+  const catSelect = document.getElementById('expenses-category-select');
+  const curVal = catSelect.value || 'all';
+  catSelect.innerHTML = '<option value="all">كل الفئات</option>' + expenseCategories().map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+  catSelect.value = expenseCategories().includes(curVal) ? curVal : 'all';
+  expenseCategoryFilter = catSelect.value;
+
+  const all = expenseFilteredList();
+  document.getElementById('expenses-stats').innerHTML = `
+    <div class="stat-card"><div class="label">إجمالي المصاريف (للفلتر الحالي)</div><div class="stat-num">${fmtMoney(expenseTotal(all))}</div></div>
+    <div class="stat-card"><div class="label">عدد المصاريف</div><div class="stat-num">${all.length}</div></div>`;
+
+  const list = all.slice((expensesPage-1)*PER_PAGE, expensesPage*PER_PAGE);
+  document.getElementById('expenses-empty').style.display = all.length?'none':'block';
+  document.getElementById('expenses-table').innerHTML = list.map(x=>`<tr>
+      <td>${fmtDate(x.date)}</td><td>${x.category}</td><td class="muted">${x.note||'—'}</td>
+      <td class="num money-only">${fmtMoney(x.amount)}</td>
+      <td><div class="row-actions"><button class="icon-action" data-edit="${x.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+      <button class="icon-action danger" data-del="${x.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button></div></td>
+    </tr>`).join('');
+  document.querySelectorAll('#expenses-table [data-edit]').forEach(b=>b.addEventListener('click', ()=>{ const x=DB.expenses.find(e=>e.id===b.dataset.edit); if(x) openExpenseModal(x); }));
+  document.querySelectorAll('#expenses-table [data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('متأكد إنك عايز تحذف المصروف ده؟')) return;
+    DB.expenses = DB.expenses.filter(x=>x.id!==b.dataset.del);
+    await persist('expenses'); showToast('تم الحذف'); renderExpensesList();
+  }));
+  renderPagination('expenses-pagination', all.length, PER_PAGE, expensesPage, p=>{ expensesPage=p; renderExpensesList(); });
+}
+
 /* ================= USERS ================= */
 document.getElementById('btn-new-user').addEventListener('click', ()=>{ if(!can('manageUsers')) return denyAccess(); openUserModal(null); });
 function userFormBody(u){
@@ -1720,6 +1830,8 @@ function renderDashboard(){
   const ordersMonth = DB.orders.filter(o=>isThisMonth(o.createdAt)).length;
   const totalSales = DB.orders.reduce((s,o)=>s+orderTotal(o),0);
   const totalProfit = DB.orders.reduce((s,o)=>s+(orderTotal(o)-orderCostTotal(o)),0);
+  const totalExpenses = expenseTotal(DB.expenses);
+  const netProfit = totalProfit - totalExpenses;
   const pendingOrders = DB.orders.filter(o=>o.status!=='Delivered').length;
   const avgOrderValue = DB.orders.length ? Math.round(totalSales/DB.orders.length) : 0;
   const outstandingDue = DB.orders.filter(o=>o.status!=='Delivered').reduce((s,o)=>s+o.remaining,0);
@@ -1730,6 +1842,10 @@ function renderDashboard(){
     <div class="stat-card"><div class="stat-top"><span class="label">أوردرات هذا الشهر</span><div class="stat-icon" style="background:var(--teal-soft);color:var(--teal);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div><div class="stat-num">${ordersMonth}</div><div class="trend neutral">هذا الشهر</div></div>
     <div class="stat-card"><div class="stat-top"><span class="label">إجمالي المبيعات</span><div class="stat-icon" style="background:var(--amber-soft);color:var(--amber);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(totalSales)}</div><div class="trend neutral">كل الفترة</div></div>
     <div class="stat-card"><div class="stat-top"><span class="label">إجمالي الأرباح التقديري</span><div class="stat-icon" style="background:var(--violet-soft);color:var(--violet);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div><div class="stat-num">${fmtMoney(totalProfit)}</div><div class="trend neutral">كل الفترة</div></div>`;
+
+  document.getElementById('dash-stats-expenses').innerHTML = `
+    <div class="stat-card"><div class="stat-top"><span class="label">إجمالي المصاريف</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div></div><div class="stat-num">${fmtMoney(totalExpenses)}</div><div class="trend neutral">كل الفترة</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">صافي الربح بعد المصاريف</span><div class="stat-icon" style="background:${netProfit>=0?'var(--teal-soft)':'var(--red-soft)'};color:${netProfit>=0?'var(--teal)':'var(--red)'};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(netProfit)}</div><div class="trend ${netProfit>=0?'neutral':'down'}">كل الفترة</div></div>`;
 
   document.getElementById('dash-stats-2').innerHTML = `
     <div class="stat-card"><div class="stat-top"><span class="label">مستحقات لم تُحصّل بعد</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div><div class="stat-num">${fmtMoney(outstandingDue)}</div><div class="trend down">من أوردرات لسه ما اتسلمتش</div></div>
