@@ -9,32 +9,33 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --navy:#141B33;
-  --navy-2:#1D2647;
-  --navy-3:#28325C;
-  --side-text:#9AA3C7;
-  --bg:#F3F5FB;
-  --card:#FFFFFF;
-  --line:#E7E9F5;
-  --ink:#1B2140;
-  --ink-soft:#6B7290;
-  --ink-faint:#9AA0BC;
-  --primary:#2F6FED;
-  --primary-hover:#2559C7;
-  --primary-soft:#E8EFFE;
-  --amber:#F5A524;
-  --amber-soft:#FDF1DC;
-  --teal:#12B981;
-  --teal-soft:#DFF7EC;
-  --violet:#8B5CF6;
-  --violet-soft:#EFE8FE;
-  --red:#EF4444;
-  --red-soft:#FCE4E4;
+  /* هوية الزهراء: عاجي + وردي هادئ + أخضر زيتوني */
+  --navy:#314432;
+  --navy-2:#415540;
+  --navy-3:#50664D;
+  --side-text:#D9E1D2;
+  --bg:#FFF9F5;
+  --card:#FFFEFD;
+  --line:#EADFD8;
+  --ink:#302C2B;
+  --ink-soft:#756D68;
+  --ink-faint:#A79B94;
+  --primary:#D9858D;
+  --primary-hover:#BD6873;
+  --primary-soft:#F9E3E4;
+  --amber:#B58A4D;
+  --amber-soft:#FBF0DD;
+  --teal:#718D70;
+  --teal-soft:#E6F0E3;
+  --violet:#8A777C;
+  --violet-soft:#F1E8EA;
+  --red:#C75C65;
+  --red-soft:#FBE6E6;
   --radius-s:8px;
   --radius-m:12px;
   --radius-l:16px;
-  --shadow: 0 1px 2px rgba(20,27,51,.04), 0 8px 24px rgba(20,27,51,.06);
-  --shadow-pop: 0 16px 40px rgba(20,27,51,.22);
+  --shadow: 0 1px 2px rgba(78,58,44,.04), 0 8px 24px rgba(78,58,44,.08);
+  --shadow-pop: 0 16px 40px rgba(78,58,44,.20);
 }
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;height:100%;}
@@ -312,7 +313,7 @@ body.perm-no-money .money-only{display:none !important;}
 /* ---------- login screen ---------- */
 #app{display:none;}
 #app.ready{display:flex;}
-.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%, #1D2647 0%, #141B33 55%, #0E1327 100%);padding:24px;position:relative;overflow:hidden;}
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 30% 20%, #50664D 0%, #314432 55%, #253626 100%);padding:24px;position:relative;overflow:hidden;}
 .login-wrap::before, .login-wrap::after{content:'';position:absolute;border-radius:50%;background:rgba(255,255,255,.03);}
 .login-wrap::before{width:520px;height:520px;top:-160px;left:-140px;}
 .login-wrap::after{width:380px;height:380px;bottom:-140px;right:-100px;}
@@ -900,7 +901,7 @@ function showToast(msg){
 }
 const STATUS_LABEL = {New:'جديد','In Progress':'قيد التنفيذ',Ready:'جاهز',Delivered:'تم التسليم'};
 const STATUS_BADGE = {New:'badge-new','In Progress':'badge-progress',Ready:'badge-ready',Delivered:'badge-delivered'};
-const STATUS_COLOR = {New:'#2F6FED','In Progress':'#F5A524',Ready:'#12B981',Delivered:'#8B5CF6'};
+const STATUS_COLOR = {New:'#D9858D','In Progress':'#B58A4D',Ready:'#718D70',Delivered:'#8A777C'};
 const STATUS_ORDER = ['New','In Progress','Ready','Delivered'];
 const PRIORITY_ORDER = ['Urgent','High','Normal','Low'];
 const PRIORITY_LABEL = {Urgent:'عاجل', High:'مهم', Normal:'متوسط', Low:'عادي'};
@@ -1403,7 +1404,7 @@ async function renderOrderDetails(id){
           </div>
         </div>
         <div class="order-item-actions">
-          ${it.done?'<span class="item-done-badge">✓ خلص</span>':'<span class="item-pending-badge">لسه</span>'}
+          ${it.done?'<span class="item-done-badge">✓ خلص'+(it.doneBy?' — بواسطة '+it.doneBy:'')+'</span>':'<span class="item-pending-badge">لسه</span>'}
           <label class="order-item-done"><input type="checkbox" class="od-item-done" data-item-id="${it.id}" ${it.done?'checked':''}> خلص التنفيذ</label>
         </div>
       </div>
@@ -1435,7 +1436,16 @@ async function renderOrderDetails(id){
         o.items = orderItems(o).map(it=>({...it}));
       }
       const target = o.items.find(it=>it.id===itemId);
-      if(target) target.done = cb.checked;
+      if(target){
+        target.done = cb.checked;
+        if(cb.checked){
+          target.doneBy = currentUser ? currentUser.name : '';
+          target.doneAt = new Date().toISOString();
+        } else {
+          delete target.doneBy;
+          delete target.doneAt;
+        }
+      }
       o.productName = o.items[0]?.productName || o.productName;
       o.cost = orderCostTotal(o);
       await persist('orders');
@@ -1793,10 +1803,10 @@ function renderLineChart(elId, points){
   const linePath = coords.map((c,i)=>(i===0?'M':'L')+c[0].toFixed(1)+','+c[1].toFixed(1)).join(' ');
   const areaPath = linePath + ' L'+coords[coords.length-1][0].toFixed(1)+','+(h-pad)+' L'+coords[0][0].toFixed(1)+','+(h-pad)+' Z';
   el.innerHTML = `<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:170px;">
-    <defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#2F6FED" stop-opacity="0.25"/><stop offset="100%" stop-color="#2F6FED" stop-opacity="0"/></linearGradient></defs>
+    <defs><linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#D9858D" stop-opacity="0.25"/><stop offset="100%" stop-color="#D9858D" stop-opacity="0"/></linearGradient></defs>
     <path d="${areaPath}" fill="url(#lg1)"/>
-    <path d="${linePath}" fill="none" stroke="#2F6FED" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
-    ${coords.map(c=>'<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="2.6" fill="#2F6FED"/>').join('')}
+    <path d="${linePath}" fill="none" stroke="#D9858D" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+    ${coords.map(c=>'<circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="2.6" fill="#D9858D"/>').join('')}
   </svg>
   <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-faint);margin-top:2px;"><span>${points[0].label}</span><span>${points[points.length-1].label}</span></div>`;
 }
