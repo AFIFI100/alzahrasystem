@@ -30,6 +30,8 @@
   --violet-soft:#EFE8FE;
   --red:#EF4444;
   --red-soft:#FCE4E4;
+  --cyan:#06B6D4;
+  --cyan-soft:#DEF7FB;
   --radius-s:8px;
   --radius-m:12px;
   --radius-l:16px;
@@ -118,6 +120,10 @@ button{font-family:inherit;}
 .grid-2{display:grid;grid-template-columns:1.6fr 1fr;gap:16px;}
 .grid-2-even{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.dash-section{margin:26px 0 12px;display:flex;align-items:center;gap:10px;}
+.dash-section:first-child{margin-top:0;}
+.dash-section h2{margin:0;font-size:14px;font-weight:800;color:var(--ink-soft);white-space:nowrap;}
+.dash-section .line{flex:1;height:1px;background:var(--line);}
 
 /* ---------- table ---------- */
 .table-wrap{overflow-x:auto;}
@@ -145,6 +151,7 @@ tbody tr:last-child td{border-bottom:none;}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;font-size:11.5px;font-weight:700;white-space:nowrap;}
 .badge::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;}
 .badge-new{background:var(--primary-soft);color:var(--primary);}
+.badge-available{background:var(--cyan-soft);color:var(--cyan);}
 .badge-progress{background:var(--amber-soft);color:var(--amber);}
 .badge-ready{background:var(--teal-soft);color:var(--teal);}
 .badge-delivered{background:var(--violet-soft);color:var(--violet);}
@@ -366,6 +373,7 @@ body.perm-no-money .money-only{display:none !important;}
       <button class="navlink" data-view="customers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c1-3.8 4-6 7-6s6 2.2 7 6"/></svg>العملاء</button>
       <button class="navlink" data-view="products"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>المنتجات</button>
       <button class="navlink" data-view="expenses"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>المصاريف</button>
+      <button class="navlink" data-view="campaigns"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l18-7-7 18-2-8-9-3z"/></svg>الإعلانات</button>
       <button class="navlink" data-view="reports"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>التقارير</button>
       <button class="navlink" data-view="users"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3"/><path d="M2 20c.8-3.4 3.6-5.5 7-5.5s6.2 2.1 7 5.5"/><circle cx="18" cy="8" r="2.4"/><path d="M17 14.3c2.3.5 4 2.1 4.5 4.2"/></svg>المستخدمين</button>
       <button class="navlink" data-view="settings"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>الإعدادات</button>
@@ -394,9 +402,17 @@ body.perm-no-money .money-only{display:none !important;}
       <!-- DASHBOARD -->
       <section class="view active" id="view-dashboard">
         <div class="page-head"><div><h1>لوحة التحكم</h1><div class="breadcrumb" id="dash-greeting">أهلاً بيك 👋 — نظرة سريعة على أداء الورشة</div></div></div>
+
+        <div class="dash-section"><h2>نظرة عامة</h2><div class="line"></div></div>
         <div class="grid-stats" id="dash-stats"></div>
-        <div class="grid-stats grid-stats-2 money-only" id="dash-stats-expenses" style="margin-bottom:14px;"></div>
-        <div class="grid-stats grid-stats-3" id="dash-stats-2"></div>
+
+        <div class="dash-section"><h2>الأرباح والمصاريف</h2><div class="line"></div></div>
+        <div class="grid-stats money-only" id="dash-stats-expenses"></div>
+
+        <div class="dash-section"><h2>التحصيل والمتابعة</h2><div class="line"></div></div>
+        <div class="grid-stats-3" id="dash-stats-2"></div>
+
+        <div class="dash-section"><h2>الأداء عبر الوقت</h2><div class="line"></div></div>
         <div class="grid-2">
           <div class="panel">
             <div class="panel-head"><h3>المبيعات خلال آخر 14 يوم</h3></div>
@@ -407,6 +423,8 @@ body.perm-no-money .money-only{display:none !important;}
             <div id="dash-donut"></div>
           </div>
         </div>
+
+        <div class="dash-section"><h2>أحدث النشاط</h2><div class="line"></div></div>
         <div class="grid-2">
           <div class="panel">
             <div class="panel-head"><h3>أحدث الأوردرات</h3><button class="muted-link" data-view="orders">عرض الكل</button></div>
@@ -417,9 +435,12 @@ body.perm-no-money .money-only{display:none !important;}
             <div class="card-list" id="dash-attention"></div>
           </div>
         </div>
-        <div class="grid-2">
+
+        <div class="dash-section"><h2>الأكثر تميزًا</h2><div class="line"></div></div>
+        <div class="grid-3">
           <div class="panel"><div class="panel-head"><h3>أكثر المنتجات طلبًا</h3></div><div id="dash-top-products"></div></div>
           <div class="panel"><div class="panel-head"><h3>أفضل العملاء</h3></div><div id="dash-top-customers"></div></div>
+          <div class="panel"><div class="panel-head"><h3>أكتر العملاء مديونية</h3></div><div id="dash-top-debtors"></div></div>
         </div>
       </section>
 
@@ -428,7 +449,7 @@ body.perm-no-money .money-only{display:none !important;}
         <div class="page-head"><div><h1>الأوردرات</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; الأوردرات</div></div><button class="btn btn-primary" id="btn-new-order-page"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>أوردر جديد</button></div>
         <div class="filterbar">
           <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="orders-search" placeholder="ابحث بالاسم أو رقم الهاتف أو المنتج..."></div>
-          <select id="orders-status-select"><option value="all">كل الحالات</option><option value="New">جديد</option><option value="In Progress">قيد التنفيذ</option><option value="Ready">جاهز</option><option value="Delivered">تم التسليم</option></select>
+          <select id="orders-status-select"><option value="all">كل الحالات</option><option value="New">جديد</option><option value="Available">متاح للتنفيذ</option><option value="In Progress">قيد التنفيذ</option><option value="Ready">جاهز</option><option value="Delivered">تم التسليم</option></select>
           <select id="orders-priority-select"><option value="all">كل الأولويات</option><option value="Urgent">عاجل</option><option value="High">مهم</option><option value="Normal">متوسط</option><option value="Low">عادي</option></select>
           <select id="orders-gov-select"><option value="all">كل المحافظات</option></select>
         </div>
@@ -446,9 +467,15 @@ body.perm-no-money .money-only{display:none !important;}
           <div style="display:flex;gap:8px;"><button class="btn btn-ghost" id="od-edit">تعديل الأوردر</button><button class="btn btn-danger" id="od-delete">حذف</button></div>
         </div>
         <div class="panel"><div class="stepper" id="order-stepper"></div></div>
-        <div class="panel">
-          <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c1-3.8 4-6 7-6s6 2.2 7 6"/></svg>بيانات العميل</div>
-          <div id="od-customer"></div>
+        <div class="grid-2-even">
+          <div class="panel">
+            <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c1-3.8 4-6 7-6s6 2.2 7 6"/></svg>بيانات العميل</div>
+            <div id="od-customer"></div>
+          </div>
+          <div class="panel">
+            <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>الحساب المالي</div>
+            <div id="od-financial"></div>
+          </div>
         </div>
         <div class="panel" style="padding-bottom:16px;">
           <div class="card-title"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>بنود الطلب <span id="od-items-progress" class="hint" style="font-weight:600;margin-right:auto;"></span></div>
@@ -471,6 +498,7 @@ body.perm-no-money .money-only{display:none !important;}
           <div style="display:flex;gap:8px;"><button class="btn btn-ghost" data-view="orders">إلغاء</button><button class="btn btn-primary" id="of-save"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>حفظ الأوردر</button></div>
         </div>
         <div class="panel"><div class="card-title">بيانات العميل</div><div id="of-customer-fields"></div></div>
+        <div class="panel"><div class="card-title">مصدر العميل</div><div id="of-source-fields"></div></div>
         <div style="margin-bottom:8px;">
           <div class="card-title" style="margin-bottom:10px;">بنود الطلب <span class="hint" style="font-weight:600;">(كل موديل / مقاس في قسم منفصل)</span></div>
           <div class="order-items-wrap" id="of-items"></div>
@@ -555,6 +583,21 @@ body.perm-no-money .money-only{display:none !important;}
           <div class="table-wrap"><table><thead><tr><th>التاريخ</th><th>الفئة</th><th>البيان</th><th class="money-only">القيمة</th><th>إجراءات</th></tr></thead><tbody id="expenses-table"></tbody></table></div>
           <div class="empty" id="expenses-empty" style="display:none;"><b>لا يوجد مصاريف مسجلة</b><p>ابدأ بتسجيل أول مصروف للورشة زي تكلفة القماش أو الخيوط أو أجور العمال</p></div>
           <div class="pagination" id="expenses-pagination"></div>
+        </div>
+      </section>
+
+      <!-- CAMPAIGNS / ADS -->
+      <section class="view" id="view-campaigns">
+        <div class="page-head"><div><h1>الإعلانات</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; الإعلانات</div></div><button class="btn btn-primary" id="btn-new-campaign"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>حملة جديدة</button></div>
+        <div class="grid-stats grid-stats-3" id="campaigns-stats" style="margin-bottom:16px;"></div>
+        <div class="filterbar">
+          <div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="campaigns-search" placeholder="ابحث باسم الحملة..."></div>
+          <select id="campaigns-platform-select"><option value="all">كل المنصات</option></select>
+        </div>
+        <div class="panel" style="padding-top:6px;">
+          <div class="table-wrap"><table><thead><tr><th>اسم الحملة</th><th>المنصة</th><th class="money-only">تكلفة الإعلان</th><th>عدد الأوردرات</th><th>عدد البنود</th><th class="money-only">تكلفة البند</th><th>إجراءات</th></tr></thead><tbody id="campaigns-table"></tbody></table></div>
+          <div class="empty" id="campaigns-empty" style="display:none;"><b>لا يوجد حملات إعلانية مسجلة</b><p>ابدأ بإضافة أول حملة إعلانية على فيسبوك أو تيك توك أو أي منصة تانية</p></div>
+          <div class="pagination" id="campaigns-pagination"></div>
         </div>
       </section>
 
@@ -681,11 +724,11 @@ const localStorageBackend = {
 };
 
 const appStorage = SUPABASE_CONFIGURED ? supabaseStorage : localStorageBackend;
-const DB = { customers: [], products: [], orders: [], users: [], expenses: [] };
+const DB = { customers: [], products: [], orders: [], users: [], expenses: [], campaigns: [] };
 let SETTINGS = { workshopName:'الزهراء', phone:'01116730673', address:'', currency:'ج.م' };
 
 async function loadAll(){
-  for(const key of ['customers','products','orders','users','expenses']){
+  for(const key of ['customers','products','orders','users','expenses','campaigns']){
     try{ const r = await appStorage.get(key, true); DB[key] = r && r.value ? JSON.parse(r.value) : []; }
     catch(e){ DB[key] = []; }
   }
@@ -718,20 +761,20 @@ const ROLE_LABEL = {
 const ROLE_PERMS = {
   Admin: {
     home: 'dashboard',
-    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','reports','users','settings'],
+    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','campaigns','reports','users','settings'],
     money: true,
     createOrder: true, editOrder: true, deleteOrder: true,
     manageCustomers: true, manageProducts: true,
-    manageUsers: true, manageSettings: true, manageExpenses: true,
+    manageUsers: true, manageSettings: true, manageExpenses: true, manageCampaigns: true,
     markItemDone: true, changeStatus: true
   },
   'Order Manager': {
     home: 'dashboard',
-    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','reports'],
+    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','campaigns','reports'],
     money: true,
     createOrder: true, editOrder: true, deleteOrder: true,
     manageCustomers: true, manageProducts: true,
-    manageUsers: false, manageSettings: false, manageExpenses: true,
+    manageUsers: false, manageSettings: false, manageExpenses: true, manageCampaigns: true,
     markItemDone: true, changeStatus: true
   },
   Production: {
@@ -740,7 +783,7 @@ const ROLE_PERMS = {
     money: false,
     createOrder: false, editOrder: false, deleteOrder: false,
     manageCustomers: false, manageProducts: false,
-    manageUsers: false, manageSettings: false, manageExpenses: false,
+    manageUsers: false, manageSettings: false, manageExpenses: false, manageCampaigns: false,
     markItemDone: true, changeStatus: true
   }
 };
@@ -788,6 +831,8 @@ function applyRoleAccess(){
   if(btnNewUser) btnNewUser.style.display = p.manageUsers ? '' : 'none';
   const btnNewExpense = document.getElementById('btn-new-expense');
   if(btnNewExpense) btnNewExpense.style.display = p.manageExpenses ? '' : 'none';
+  const btnNewCampaign = document.getElementById('btn-new-campaign');
+  if(btnNewCampaign) btnNewCampaign.style.display = p.manageCampaigns ? '' : 'none';
 }
 async function getSession(){
   try{ const r = await localStorageBackend.get('session'); return r && r.value ? JSON.parse(r.value) : null; }catch(e){ return null; }
@@ -898,10 +943,10 @@ function showToast(msg){
   const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
   clearTimeout(showToast._h); showToast._h=setTimeout(()=>t.classList.remove('show'),2400);
 }
-const STATUS_LABEL = {New:'جديد','In Progress':'قيد التنفيذ',Ready:'جاهز',Delivered:'تم التسليم'};
-const STATUS_BADGE = {New:'badge-new','In Progress':'badge-progress',Ready:'badge-ready',Delivered:'badge-delivered'};
-const STATUS_COLOR = {New:'#2F6FED','In Progress':'#F5A524',Ready:'#12B981',Delivered:'#8B5CF6'};
-const STATUS_ORDER = ['New','In Progress','Ready','Delivered'];
+const STATUS_LABEL = {New:'جديد',Available:'متاح للتنفيذ','In Progress':'قيد التنفيذ',Ready:'جاهز',Delivered:'تم التسليم'};
+const STATUS_BADGE = {New:'badge-new',Available:'badge-available','In Progress':'badge-progress',Ready:'badge-ready',Delivered:'badge-delivered'};
+const STATUS_COLOR = {New:'#2F6FED',Available:'#06B6D4','In Progress':'#F5A524',Ready:'#12B981',Delivered:'#8B5CF6'};
+const STATUS_ORDER = ['New','Available','In Progress','Ready','Delivered'];
 const PRIORITY_ORDER = ['Urgent','High','Normal','Low'];
 const PRIORITY_LABEL = {Urgent:'عاجل', High:'مهم', Normal:'متوسط', Low:'عادي'};
 const PRIORITY_BADGE = {Urgent:'prio-urgent', High:'prio-high', Normal:'prio-normal', Low:'prio-low'};
@@ -909,6 +954,20 @@ const PRIORITY_RANK = {Urgent:4, High:3, Normal:2, Low:1};
 function normalizePriority(p){ return PRIORITY_LABEL[p] ? p : 'Normal'; }
 function badge(status){ return '<span class="badge '+STATUS_BADGE[status]+'">'+STATUS_LABEL[status]+'</span>'; }
 function priorityBadge(p){ p = normalizePriority(p); return '<span class="prio-badge '+PRIORITY_BADGE[p]+'">'+PRIORITY_LABEL[p]+'</span>'; }
+const SOURCE_OPTIONS = [
+  {value:'facebook', label:'فيسبوك'},
+  {value:'instagram', label:'انستجرام'},
+  {value:'tiktok', label:'تيك توك'},
+  {value:'whatsapp', label:'واتساب'},
+  {value:'website', label:'الموقع الإلكتروني'},
+  {value:'other', label:'مصدر آخر'}
+];
+const SOURCE_LABEL = SOURCE_OPTIONS.reduce((m,o)=>{ m[o.value]=o.label; return m; },{});
+function sourceLabel(v){ return SOURCE_LABEL[v] || '—'; }
+function campaignOrders(campaignId){ return DB.orders.filter(o=>o.campaignId===campaignId); }
+function campaignItemsCount(campaignId){ return campaignOrders(campaignId).reduce((s,o)=>s+orderItems(o).length,0); }
+function campaignCostPerItem(c){ const n = campaignItemsCount(c.id); return n ? (Number(c.cost)||0)/n : 0; }
+function getCampaign(id){ return DB.campaigns.find(c=>c.id===id); }
 function getCustomer(id){ return DB.customers.find(c=>c.id===id); }
 function customerOrders(id){ return DB.orders.filter(o=>o.customerId===id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); }
 function initials(name){ return (name||'?').trim().slice(0,1); }
@@ -918,7 +977,7 @@ let editingOrderId = null, editingProductId = null;
 const PAGE_META = {
   dashboard:'dashboard', orders:'orders', 'order-details':'order-details', 'order-form':'order-form',
   customers:'customers', 'customer-details':'customer-details', products:'products', 'product-form':'product-form',
-  expenses:'expenses', reports:'reports', users:'users', settings:'settings'
+  expenses:'expenses', campaigns:'campaigns', reports:'reports', users:'users', settings:'settings'
 };
 function goTo(view){
   if(currentUser && !canView(view)){
@@ -938,6 +997,7 @@ function goTo(view){
   if(view==='customers') renderCustomersList();
   if(view==='products') renderProductsList();
   if(view==='expenses') renderExpensesList();
+  if(view==='campaigns') renderCampaignsList();
   if(view==='reports') renderReports();
   if(view==='users') renderUsersList();
   if(view==='settings') renderSettings();
@@ -1231,6 +1291,19 @@ async function openOrderForm(existingId){
     <div class="field"><label>موعد التسليم المتوقع</label><input id="f-duedate" type="date" value="${o.dueDate||''}"></div>
     <div class="field"><label>ملاحظات عامة على الأوردر</label><textarea id="f-notes" placeholder="أي تفاصيل عامة...">${o.notes||''}</textarea></div>`;
 
+  document.getElementById('of-source-fields').innerHTML = `
+    <div class="field-row">
+      <div class="field"><label>العميل جه عن طريق ايه؟</label><select id="f-source">
+        <option value="">— غير محدد —</option>
+        ${SOURCE_OPTIONS.map(s=>'<option value="'+s.value+'" '+(o.source===s.value?'selected':'')+'>'+s.label+'</option>').join('')}
+      </select></div>
+      <div class="field"><label>الحملة الإعلانية (لو جه عن طريق إعلان مدفوع)</label><select id="f-campaign">
+        <option value="">— بدون حملة —</option>
+        ${DB.campaigns.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(c=>'<option value="'+c.id+'" '+(o.campaignId===c.id?'selected':'')+'>'+c.name+' ('+sourceLabel(c.platform)+')</option>').join('')}
+      </select></div>
+    </div>
+    <p class="hint">اختيار الحملة بيساعدنا نحسب تكلفة الإعلان على كل بند في الأوردرات اللي جايه منها</p>`;
+
   const sel = document.getElementById('f-customer');
   sel.addEventListener('change', ()=>{ document.getElementById('new-customer-fields').style.display = sel.value ? 'none':'block'; });
 
@@ -1283,6 +1356,8 @@ function readOrderForm(existing){
     deposit,
     remaining: Math.max(total - deposit, 0),
     shippingType: document.getElementById('f-shiptype').value, shippingPrice: Number(document.getElementById('f-shipprice').value)||0,
+    source: document.getElementById('f-source').value || null,
+    campaignId: document.getElementById('f-campaign').value || null,
     status: document.getElementById('f-status').value, dueDate: document.getElementById('f-duedate').value,
     priority: normalizePriority(document.getElementById('f-priority').value),
     notes: document.getElementById('f-notes').value.trim(),
@@ -1344,7 +1419,7 @@ function renderOrdersList(){
     const canEdit = can('editOrder');
     return `<tr>
       <td class="muted num">#${o.id.slice(-4).toUpperCase()}</td>
-      <td class="clickable"><div class="cell-person"><div class="avatar" style="width:30px;height:30px;font-size:11px;">${initials(c?c.name:'?')}</div><div><div class="nm">${c?c.name:'—'}</div></div></div></td>
+      <td class="clickable"><div class="cell-person"><div class="avatar" style="width:30px;height:30px;font-size:11px;">${initials(c?c.name:'?')}</div><div><div class="nm">${c?c.name:'—'}</div>${o.remaining>0?`<div class="sub" style="color:var(--amber);font-weight:700;">متبقي ${fmtMoney(o.remaining)}</div>`:(o.deposit>0?'<div class="sub" style="color:var(--teal);font-weight:700;">مدفوع بالكامل</div>':'')}</div></div></td>
       <td class="muted num">${c?c.phone:'—'}</td>
       <td>${orderProductLabel(o)}</td>
       <td class="num money-only">${fmtMoney(orderTotal(o))}</td>
@@ -1354,11 +1429,20 @@ function renderOrdersList(){
       <td><div class="row-actions">
         <button class="icon-action" data-view-id="${o.id}" title="عرض"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
         ${canEdit?`<button class="icon-action" data-edit-id="${o.id}" title="تعديل"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>`:''}
+        ${can('deleteOrder')?`<button class="icon-action danger" data-del-id="${o.id}" title="حذف"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button>`:''}
       </div></td>
     </tr>`;
   }).join('');
   tbody.querySelectorAll('[data-view-id]').forEach(b=>b.addEventListener('click', ()=>{ renderOrderDetails(b.dataset.viewId); goTo('order-details'); }));
   tbody.querySelectorAll('[data-edit-id]').forEach(b=>b.addEventListener('click', ()=>{ if(!can('editOrder')) return denyAccess(); openOrderForm(b.dataset.editId); }));
+  tbody.querySelectorAll('[data-del-id]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!can('deleteOrder')) return denyAccess();
+    if(!confirm('متأكد إنك عايز تحذف الأوردر ده؟')) return;
+    const id = b.dataset.delId;
+    DB.orders = DB.orders.filter(x=>x.id!==id);
+    await persist('orders'); await deleteOrderImages(id);
+    showToast('تم حذف الأوردر'); renderOrdersList();
+  }));
   tbody.querySelectorAll('td:nth-child(2)').forEach((td,i)=>td.addEventListener('click', ()=>{ renderOrderDetails(list[i].id); goTo('order-details'); }));
   renderPagination('orders-pagination', all.length, PER_PAGE, ordersPage, p=>{ ordersPage=p; renderOrdersList(); });
 }
@@ -1381,8 +1465,21 @@ async function renderOrderDetails(id){
     <div class="kv"><span>الهاتف</span><span>${c?c.phone:'—'}</span></div>
     <div class="kv"><span>المحافظة</span><span>${c?c.governorate||'—':'—'}</span></div>
     <div class="kv"><span>العنوان</span><span>${c?c.address||'—':'—'}</span></div>
+    <div class="kv"><span>مصدر العميل</span><span>${o.source?sourceLabel(o.source):'—'}</span></div>
+    <div class="kv"><span>الحملة الإعلانية</span><span>${o.campaignId&&getCampaign(o.campaignId)?getCampaign(o.campaignId).name:'—'}</span></div>
     ${c&&canView('customer-details')?'<button class="btn btn-ghost btn-sm" id="goto-customer" style="margin-top:10px;width:100%;">عرض بيانات العميل بالكامل</button>':''}`;
   if(c && canView('customer-details')) document.getElementById('goto-customer').onclick = ()=>{ renderCustomerDetails(c.id); goTo('customer-details'); };
+
+  const total = orderTotal(o);
+  const deposit = o.deposit||0;
+  const remaining = o.remaining!=null ? o.remaining : Math.max(total-deposit,0);
+  document.getElementById('od-financial').innerHTML = `
+    <div class="kv"><span>الإجمالي</span><span>${fmtMoney(total)}</span></div>
+    <div class="kv"><span>العربون المدفوع</span><span>${fmtMoney(deposit)}</span></div>
+    <div class="kv"><span>المتبقي على العميل</span><span style="font-weight:800;color:${remaining>0?'var(--amber)':'var(--teal)'}">${fmtMoney(remaining)}</span></div>
+    ${remaining>0
+      ? `<div class="item-pending-badge" style="margin-top:10px;width:100%;justify-content:center;">لسه فاضل ${fmtMoney(remaining)} على العميل</div>`
+      : `<div class="item-pending-badge" style="margin-top:10px;width:100%;justify-content:center;background:var(--teal-soft);color:#0F766E;">الحساب متسدد بالكامل</div>`}`;
 
   const doneCount = items.filter(it=>it.done).length;
   document.getElementById('od-items-progress').textContent = items.length ? `(${doneCount} من ${items.length} خلصوا)` : '';
@@ -1511,22 +1608,32 @@ function renderCustomersList(){
   const all = list;
   list = list.slice((customersPage-1)*PER_PAGE, customersPage*PER_PAGE);
   document.getElementById('customers-empty').style.display = all.length?'none':'block';
+  const canManage = can('manageCustomers');
   document.getElementById('customers-table').innerHTML = list.map(c=>{
     const orders = customerOrders(c.id);
     const total = orders.reduce((s,o)=>s+orderTotal(o),0);
     return `<tr>
-      <td class="clickable"><div class="cell-person"><div class="avatar" style="width:32px;height:32px;font-size:12px;">${initials(c.name)}</div><div class="nm">${c.name}</div></div></td>
+      <td class="clickable" data-view="${c.id}"><div class="cell-person"><div class="avatar" style="width:32px;height:32px;font-size:12px;">${initials(c.name)}</div><div class="nm">${c.name}</div></div></td>
       <td class="num muted">${c.phone}</td><td>${c.governorate||'—'}</td><td class="num">${orders.length}</td><td class="num">${fmtMoney(total)}</td>
-      <td><button class="icon-action" data-id="${c.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></td>
+      <td><div class="row-actions">
+        <button class="icon-action" data-view="${c.id}" title="عرض"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        ${canManage?`<button class="icon-action" data-edit="${c.id}" title="تعديل"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>`:''}
+        ${canManage?`<button class="icon-action danger" data-del="${c.id}" title="حذف"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button>`:''}
+      </div></td>
     </tr>`;
   }).join('');
-  document.querySelectorAll('#customers-table td.clickable, #customers-table [data-id]').forEach(el=>{
-    const id = el.dataset.id || (el.closest('tr') && list[[...el.closest('tbody').children].indexOf(el.closest('tr'))]?.id);
-  });
-  [...document.getElementById('customers-table').children].forEach((tr,i)=>{
-    tr.querySelector('.clickable').addEventListener('click', ()=>{ renderCustomerDetails(list[i].id); goTo('customer-details'); });
-    tr.querySelector('[data-id]').addEventListener('click', ()=>{ renderCustomerDetails(list[i].id); goTo('customer-details'); });
-  });
+  document.querySelectorAll('#customers-table [data-view]').forEach(el=>el.addEventListener('click', ()=>{ renderCustomerDetails(el.dataset.view); goTo('customer-details'); }));
+  if(canManage){
+    document.querySelectorAll('#customers-table [data-edit]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation(); const c=DB.customers.find(x=>x.id===b.dataset.edit); if(c) openCustomerModal(c); }));
+    document.querySelectorAll('#customers-table [data-del]').forEach(b=>b.addEventListener('click', async (e)=>{
+      e.stopPropagation();
+      const id = b.dataset.del;
+      if(customerOrders(id).length){ showToast('لا يمكن حذف عميل مرتبط بأوردرات موجودة'); return; }
+      if(!confirm('متأكد إنك عايز تحذف العميل ده؟')) return;
+      DB.customers = DB.customers.filter(x=>x.id!==id);
+      await persist('customers'); showToast('تم الحذف'); renderCustomersList();
+    }));
+  }
   renderPagination('customers-pagination', all.length, PER_PAGE, customersPage, p=>{ customersPage=p; renderCustomersList(); });
 }
 function renderCustomerDetails(id){
@@ -1714,6 +1821,87 @@ function renderExpensesList(){
   renderPagination('expenses-pagination', all.length, PER_PAGE, expensesPage, p=>{ expensesPage=p; renderExpensesList(); });
 }
 
+/* ================= CAMPAIGNS / ADS ================= */
+document.getElementById('btn-new-campaign').addEventListener('click', ()=>{ if(!can('manageCampaigns')) return denyAccess(); openCampaignModal(null); });
+let campaignSearchTerm='', campaignsPage=1, campaignPlatformFilter='all';
+document.getElementById('campaigns-search').addEventListener('input', e=>{ campaignSearchTerm=e.target.value.trim(); campaignsPage=1; renderCampaignsList(); });
+document.getElementById('campaigns-platform-select').addEventListener('change', e=>{ campaignPlatformFilter=e.target.value; campaignsPage=1; renderCampaignsList(); });
+function campaignFormBody(x){
+  x = x||{};
+  return `<div class="field"><label>اسم الحملة</label><input id="cf-name" value="${x.name||''}" placeholder="مثال: حملة فيسبوك رمضان"></div>
+    <div class="field-row">
+      <div class="field"><label>المنصة</label><select id="cf-platform">${SOURCE_OPTIONS.map(o=>'<option value="'+o.value+'" '+(x.platform===o.value?'selected':'')+'>'+o.label+'</option>').join('')}</select></div>
+      <div class="field"><label>تكلفة الإعلان</label><input id="cf-cost" type="number" min="0" value="${x.cost??''}" placeholder="0"></div>
+    </div>
+    <div class="field"><label>تاريخ البدء</label><input id="cf-date" type="date" value="${(x.date||todayISO()).slice(0,10)}"></div>
+    <div class="field" style="margin-bottom:0;"><label>ملاحظات</label><textarea id="cf-note" placeholder="تفاصيل الحملة...">${x.note||''}</textarea></div>`;
+}
+function openCampaignModal(existing){
+  if(!can('manageCampaigns')) return denyAccess();
+  openModal(existing?'تعديل الحملة':'حملة إعلانية جديدة', campaignFormBody(existing),
+    '<button class="btn btn-ghost" id="cancel">إلغاء</button><button class="btn btn-primary" id="save">حفظ</button>');
+  document.getElementById('cancel').onclick = closeModal;
+  document.getElementById('save').onclick = async ()=>{
+    const name = document.getElementById('cf-name').value.trim();
+    const platform = document.getElementById('cf-platform').value;
+    const cost = Number(document.getElementById('cf-cost').value);
+    const date = document.getElementById('cf-date').value || todayISO().slice(0,10);
+    const note = document.getElementById('cf-note').value.trim();
+    if(!name){ showToast('من فضلك أدخل اسم الحملة'); return; }
+    if(!cost || cost<=0){ showToast('من فضلك أدخل تكلفة صحيحة للحملة'); return; }
+    if(existing){ Object.assign(existing, {name, platform, cost, date, note}); }
+    else{ DB.campaigns.push({id:uid(), name, platform, cost, date, note, createdAt:todayISO()}); }
+    await persist('campaigns'); closeModal(); showToast('تم الحفظ'); renderCampaignsList();
+  };
+}
+function campaignFilteredList(){
+  let list = DB.campaigns.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(campaignPlatformFilter!=='all') list = list.filter(x=>x.platform===campaignPlatformFilter);
+  if(campaignSearchTerm){ const q=campaignSearchTerm.toLowerCase(); list = list.filter(x=>(x.name||'').toLowerCase().includes(q)); }
+  return list;
+}
+function renderCampaignsList(){
+  const platSelect = document.getElementById('campaigns-platform-select');
+  const curVal = platSelect.value || 'all';
+  platSelect.innerHTML = '<option value="all">كل المنصات</option>' + SOURCE_OPTIONS.map(o=>'<option value="'+o.value+'">'+o.label+'</option>').join('');
+  platSelect.value = curVal;
+  campaignPlatformFilter = platSelect.value;
+
+  const all = campaignFilteredList();
+  const totalCost = all.reduce((s,x)=>s+(Number(x.cost)||0),0);
+  const totalItems = all.reduce((s,x)=>s+campaignItemsCount(x.id),0);
+  document.getElementById('campaigns-stats').innerHTML = `
+    <div class="stat-card"><div class="label">إجمالي تكلفة الإعلانات (للفلتر الحالي)</div><div class="stat-num">${fmtMoney(totalCost)}</div></div>
+    <div class="stat-card"><div class="label">عدد الحملات</div><div class="stat-num">${all.length}</div></div>
+    <div class="stat-card"><div class="label">إجمالي البنود المكتسبة من الإعلانات</div><div class="stat-num">${totalItems}</div></div>`;
+
+  const list = all.slice((campaignsPage-1)*PER_PAGE, campaignsPage*PER_PAGE);
+  document.getElementById('campaigns-empty').style.display = all.length?'none':'block';
+  document.getElementById('campaigns-table').innerHTML = list.map(x=>{
+    const ordersCount = campaignOrders(x.id).length;
+    const itemsCount = campaignItemsCount(x.id);
+    const perItem = campaignCostPerItem(x);
+    return `<tr>
+      <td>${x.name}</td><td>${sourceLabel(x.platform)}</td>
+      <td class="num money-only">${fmtMoney(x.cost)}</td>
+      <td class="num">${ordersCount}</td>
+      <td class="num">${itemsCount}</td>
+      <td class="num money-only">${itemsCount ? fmtMoney(perItem) : '—'}</td>
+      <td><div class="row-actions"><button class="icon-action" data-edit="${x.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+      <button class="icon-action danger" data-del="${x.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button></div></td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('#campaigns-table [data-edit]').forEach(b=>b.addEventListener('click', ()=>{ const x=DB.campaigns.find(c=>c.id===b.dataset.edit); if(x) openCampaignModal(x); }));
+  document.querySelectorAll('#campaigns-table [data-del]').forEach(b=>b.addEventListener('click', async ()=>{
+    if(!confirm('متأكد إنك عايز تحذف الحملة دي؟ الأوردرات المرتبطة بيها هتفضل موجودة بس من غير ربط بحملة.')) return;
+    const cid = b.dataset.del;
+    DB.orders.forEach(o=>{ if(o.campaignId===cid) o.campaignId = null; });
+    DB.campaigns = DB.campaigns.filter(x=>x.id!==cid);
+    await persist('campaigns'); await persist('orders'); showToast('تم الحذف'); renderCampaignsList();
+  }));
+  renderPagination('campaigns-pagination', all.length, PER_PAGE, campaignsPage, p=>{ campaignsPage=p; renderCampaignsList(); });
+}
+
 /* ================= USERS ================= */
 document.getElementById('btn-new-user').addEventListener('click', ()=>{ if(!can('manageUsers')) return denyAccess(); openUserModal(null); });
 function userFormBody(u){
@@ -1829,37 +2017,48 @@ function renderDonut(elId, segments){
 /* ================= DASHBOARD ================= */
 function topProducts(orders){ const map={}; orders.forEach(o=>{ orderItems(o).forEach(it=>{ map[it.productName]=(map[it.productName]||0)+(Number(it.quantity)||1); }); }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5); }
 function topCustomers(orders){ const map={}; orders.forEach(o=>{ const c=getCustomer(o.customerId); if(!c) return; map[c.id]=(map[c.id]||0)+orderTotal(o); }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,total])=>[getCustomer(id)?.name||'—', total]); }
-function renderRankList(elId, entries, isCount){
+function topDebtors(){ const map={}; DB.orders.filter(o=>o.status!=='Delivered' && o.remaining>0).forEach(o=>{ const c=getCustomer(o.customerId); if(!c) return; map[c.id]=(map[c.id]||0)+o.remaining; }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,total])=>[getCustomer(id)?.name||'—', total]); }
+function renderRankList(elId, entries, isCount, subtitle){
   const el = document.getElementById(elId);
   if(!entries.length){ el.innerHTML = '<div class="empty" style="padding:20px;"><p>لا توجد بيانات كافية بعد</p></div>'; return; }
-  el.innerHTML = entries.map(([label,val],i)=>`<div class="rank-row"><div class="rank-badge">${i+1}</div><div class="rank-info"><div class="t">${label}</div><div class="s">${isCount? val+' قطعة مباعة' : 'إجمالي مشتريات'}</div></div><div class="rank-val">${isCount? val : fmtMoney(val)}</div></div>`).join('');
+  el.innerHTML = entries.map(([label,val],i)=>`<div class="rank-row"><div class="rank-badge">${i+1}</div><div class="rank-info"><div class="t">${label}</div><div class="s">${isCount? val+' قطعة مباعة' : (subtitle||'إجمالي مشتريات')}</div></div><div class="rank-val">${isCount? val : fmtMoney(val)}</div></div>`).join('');
 }
 function renderDashboard(){
   const ordersToday = DB.orders.filter(o=>isToday(o.createdAt)).length;
+  const ordersYesterday = DB.orders.filter(o=>{ const y=new Date(); y.setDate(y.getDate()-1); return new Date(o.createdAt).toDateString()===y.toDateString(); }).length;
   const ordersMonth = DB.orders.filter(o=>isThisMonth(o.createdAt)).length;
+  const lastMonthRef = new Date(); lastMonthRef.setMonth(lastMonthRef.getMonth()-1);
+  const ordersLastMonth = DB.orders.filter(o=>{ const d=new Date(o.createdAt); return d.getMonth()===lastMonthRef.getMonth() && d.getFullYear()===lastMonthRef.getFullYear(); }).length;
   const totalSales = DB.orders.reduce((s,o)=>s+orderTotal(o),0);
   const totalProfit = DB.orders.reduce((s,o)=>s+(orderTotal(o)-orderCostTotal(o)),0);
   const totalExpenses = expenseTotal(DB.expenses);
   const netProfit = totalProfit - totalExpenses;
-  const pendingOrders = DB.orders.filter(o=>o.status!=='Delivered').length;
+  const profitMargin = totalSales>0 ? Math.round((totalProfit/totalSales)*1000)/10 : 0;
   const avgOrderValue = DB.orders.length ? Math.round(totalSales/DB.orders.length) : 0;
   const outstandingDue = DB.orders.filter(o=>o.status!=='Delivered').reduce((s,o)=>s+o.remaining,0);
-  const dueSoon = DB.orders.filter(o=>o.status!=='Delivered' && o.dueDate && (new Date(o.dueDate)-new Date())/86400000 <= 3).length;
+  const dueSoon = DB.orders.filter(o=>o.status!=='Delivered' && o.dueDate && (new Date(o.dueDate)-new Date())/86400000 <= 3 && (new Date(o.dueDate)-new Date())/86400000 >= 0).length;
+  const overdueCount = DB.orders.filter(o=>o.status!=='Delivered' && o.dueDate && new Date(o.dueDate) < new Date()).length;
+
+  const trend = (cur,prev)=>{ if(!prev) return cur>0?{cls:'up',txt:'زيادة عن الفترة اللي فاتت'}:{cls:'neutral',txt:'زي الفترة اللي فاتت'}; const diff=Math.round(((cur-prev)/prev)*100); if(diff===0) return {cls:'neutral',txt:'زي الفترة اللي فاتت'}; return diff>0?{cls:'up',txt:`+${diff}% عن الفترة اللي فاتت`}:{cls:'down',txt:`${diff}% عن الفترة اللي فاتت`}; };
+  const todayTrend = trend(ordersToday, ordersYesterday);
+  const monthTrend = trend(ordersMonth, ordersLastMonth);
 
   document.getElementById('dash-stats').innerHTML = `
-    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات اليوم</span><div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div></div><div class="stat-num">${ordersToday}</div><div class="trend neutral">هذا اليوم</div></div>
-    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات هذا الشهر</span><div class="stat-icon" style="background:var(--teal-soft);color:var(--teal);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div><div class="stat-num">${ordersMonth}</div><div class="trend neutral">هذا الشهر</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات اليوم</span><div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div></div><div class="stat-num">${ordersToday}</div><div class="trend ${todayTrend.cls}">${todayTrend.txt}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات هذا الشهر</span><div class="stat-icon" style="background:var(--teal-soft);color:var(--teal);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div><div class="stat-num">${ordersMonth}</div><div class="trend ${monthTrend.cls}">${monthTrend.txt}</div></div>
     <div class="stat-card"><div class="stat-top"><span class="label">إجمالي المبيعات</span><div class="stat-icon" style="background:var(--amber-soft);color:var(--amber);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(totalSales)}</div><div class="trend neutral">كل الفترة</div></div>
-    <div class="stat-card"><div class="stat-top"><span class="label">إجمالي الأرباح التقديري</span><div class="stat-icon" style="background:var(--violet-soft);color:var(--violet);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div><div class="stat-num">${fmtMoney(totalProfit)}</div><div class="trend neutral">كل الفترة</div></div>`;
+    <div class="stat-card"><div class="stat-top"><span class="label">متوسط قيمة الأوردر</span><div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div></div><div class="stat-num">${fmtMoney(avgOrderValue)}</div><div class="trend neutral">لكل ${DB.orders.length} أوردر</div></div>`;
 
   document.getElementById('dash-stats-expenses').innerHTML = `
+    <div class="stat-card"><div class="stat-top"><span class="label">إجمالي الأرباح التقديري</span><div class="stat-icon" style="background:var(--violet-soft);color:var(--violet);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div><div class="stat-num">${fmtMoney(totalProfit)}</div><div class="trend neutral">قبل خصم المصاريف العامة</div></div>
     <div class="stat-card"><div class="stat-top"><span class="label">إجمالي المصاريف</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div></div><div class="stat-num">${fmtMoney(totalExpenses)}</div><div class="trend neutral">كل الفترة</div></div>
-    <div class="stat-card"><div class="stat-top"><span class="label">صافي الربح بعد المصاريف</span><div class="stat-icon" style="background:${netProfit>=0?'var(--teal-soft)':'var(--red-soft)'};color:${netProfit>=0?'var(--teal)':'var(--red)'};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(netProfit)}</div><div class="trend ${netProfit>=0?'neutral':'down'}">كل الفترة</div></div>`;
+    <div class="stat-card"><div class="stat-top"><span class="label">صافي الربح بعد المصاريف</span><div class="stat-icon" style="background:${netProfit>=0?'var(--teal-soft)':'var(--red-soft)'};color:${netProfit>=0?'var(--teal)':'var(--red)'};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(netProfit)}</div><div class="trend ${netProfit>=0?'neutral':'down'}">كل الفترة</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">هامش الربح</span><div class="stat-icon" style="background:var(--cyan-soft);color:var(--cyan);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 8l-5 5-3-3-4 4"/></svg></div></div><div class="stat-num">${profitMargin}%</div><div class="trend neutral">من إجمالي المبيعات</div></div>`;
 
   document.getElementById('dash-stats-2').innerHTML = `
     <div class="stat-card"><div class="stat-top"><span class="label">مستحقات لم تُحصّل بعد</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div><div class="stat-num">${fmtMoney(outstandingDue)}</div><div class="trend down">من أوردرات لسه ما اتسلمتش</div></div>
-    <div class="stat-card"><div class="stat-top"><span class="label">متوسط قيمة الأوردر</span><div class="stat-icon" style="background:var(--primary-soft);color:var(--primary);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div></div><div class="stat-num">${fmtMoney(avgOrderValue)}</div><div class="trend neutral">لكل ${DB.orders.length} أوردر</div></div>
-    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات مستحقة قريبًا (3 أيام)</span><div class="stat-icon" style="background:var(--amber-soft);color:var(--amber);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 9h18M4 5h16a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></div></div><div class="stat-num">${dueSoon}</div><div class="trend ${dueSoon?'down':'neutral'}">${dueSoon? 'محتاجة متابعة':'مفيش حاجة مستعجلة'}</div></div>`;
+    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات مستحقة قريبًا (3 أيام)</span><div class="stat-icon" style="background:var(--amber-soft);color:var(--amber);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 2v4M16 2v4M3 9h18M4 5h16a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/></svg></div></div><div class="stat-num">${dueSoon}</div><div class="trend ${dueSoon?'down':'neutral'}">${dueSoon? 'محتاجة متابعة':'مفيش حاجة مستعجلة'}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">أوردرات متأخرة عن الموعد</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L14.7 3.86a2 2 0 0 0-3.4 0z"/></svg></div></div><div class="stat-num">${overdueCount}</div><div class="trend ${overdueCount?'down':'neutral'}">${overdueCount? 'فاتت مواعيدها فعلاً':'كله في الميعاد'}</div></div>`;
 
   const days = [];
   for(let i=13;i>=0;i--){ const d=new Date(); d.setDate(d.getDate()-i); const v = DB.orders.filter(o=>new Date(o.createdAt).toDateString()===d.toDateString()).reduce((s,o)=>s+orderTotal(o),0); days.push({label:d.toLocaleDateString('ar-EG',{day:'numeric',month:'short'}), v}); }
@@ -1876,6 +2075,7 @@ function renderDashboard(){
 
   renderRankList('dash-top-products', topProducts(DB.orders), true);
   renderRankList('dash-top-customers', topCustomers(DB.orders), false);
+  renderRankList('dash-top-debtors', topDebtors(), false, 'متبقي عليه');
 }
 
 /* ================= REPORTS ================= */
