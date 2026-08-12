@@ -200,6 +200,11 @@ textarea{resize:vertical;min-height:70px;}
 .order-item-done{display:inline-flex;align-items:center;gap:8px;font-size:12.8px;font-weight:700;color:var(--ink-soft);cursor:pointer;user-select:none;padding:6px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--line);}
 .order-item-done input{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;flex:0 0 auto;}
 .order-item-sec.is-done .order-item-done{background:var(--teal-soft, #E7F8F1);color:#0F766E;border-color:#a7e8cf;}
+.kranish-box{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;background:var(--violet-soft);border:1px solid #ded0fc;margin-bottom:14px;}
+.kranish-box input{width:16px;height:16px;accent-color:var(--violet);cursor:pointer;flex:0 0 auto;margin-top:2px;}
+.kranish-box label{font-size:13.2px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;display:block;}
+.kranish-box .kranish-hint{font-size:11.8px;color:var(--ink-soft);font-weight:500;margin-top:2px;}
+.kranish-badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;color:#6D28D9;background:var(--violet-soft);border:1px solid #ded0fc;border-radius:7px;padding:3px 8px;margin-inline-start:8px;}
 .order-item-sec.is-done .order-item-title{text-decoration:line-through;opacity:.75;}
 .order-item-actions{display:flex;align-items:center;gap:8px;}
 .order-item-body{display:grid;grid-template-columns:1fr 1.15fr;gap:16px;}
@@ -409,6 +414,20 @@ body.perm-no-money .money-only{display:none !important;}
         <div class="dash-section"><h2>الأرباح والمصاريف</h2><div class="line"></div></div>
         <div class="grid-stats money-only" id="dash-stats-expenses"></div>
 
+        <div class="dash-section" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <h2>المصنعية</h2>
+          <select id="dash-mfg-month" style="max-width:220px;"></select>
+        </div>
+        <div class="line"></div>
+        <div class="grid-stats-3 money-only" id="dash-stats-mfg"></div>
+
+        <div class="dash-section" style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+          <h2>الأرباح وصندوق التطوير</h2>
+          <select id="dash-profit-month" style="max-width:220px;"></select>
+        </div>
+        <div class="line"></div>
+        <div class="grid-stats money-only" id="dash-stats-profit"></div>
+
         <div class="dash-section"><h2>التحصيل والمتابعة</h2><div class="line"></div></div>
         <div class="grid-stats-3" id="dash-stats-2"></div>
 
@@ -545,7 +564,7 @@ body.perm-no-money .money-only{display:none !important;}
         <div class="page-head"><div><h1>المنتجات</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; المنتجات</div></div><button class="btn btn-primary" id="btn-new-product-page"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>منتج جديد</button></div>
         <div class="filterbar"><div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="products-search" placeholder="ابحث عن منتج..."></div></div>
         <div class="panel" style="padding-top:6px;">
-          <div class="table-wrap"><table><thead><tr><th>المنتج</th><th>السعر</th><th>التكلفة</th><th>الربح</th><th>عدد الأوردرات</th><th>إجراءات</th></tr></thead><tbody id="products-table"></tbody></table></div>
+          <div class="table-wrap"><table><thead><tr><th>المنتج</th><th>السعر</th><th>التكلفة</th><th>المصنعية</th><th>الربح</th><th>عدد الأوردرات</th><th>إجراءات</th></tr></thead><tbody id="products-table"></tbody></table></div>
           <div class="empty" id="products-empty" style="display:none;"><b>لا يوجد منتجات بعد</b><p>أضف موديلات الورشة عشان تسهّل اختيارها عند إنشاء أوردر</p></div>
           <div class="pagination" id="products-pagination"></div>
         </div>
@@ -923,14 +942,40 @@ function orderItems(o){
       quantity: Number(o.quantity)||1,
       price: Number(o.price)||0,
       cost: Number(o.cost)||0,
+      manufacturing: Number(o.manufacturing)||0,
       notes: '',
       done: o.status==='Delivered' || o.status==='Ready'
     }];
   }
   return [];
 }
-function orderTotal(o){ return orderItems(o).reduce((s,it)=>s + (Number(it.price)||0)*(Number(it.quantity)||1), 0); }
+function orderGrossTotal(o){ return orderItems(o).reduce((s,it)=>s + (Number(it.price)||0)*(Number(it.quantity)||1), 0); }
+/* بتحسب قيمة الخصم على الأوردر: بالنسبة المئوية أو بمبلغ ثابت، من غير ما تتعدى إجمالي الأوردر */
+function orderDiscountAmount(o){
+  if(!o || !o.discountType || o.discountType==='none') return 0;
+  const gross = orderGrossTotal(o);
+  const val = Number(o.discountValue)||0;
+  if(val<=0 || gross<=0) return 0;
+  let amt = o.discountType==='percent' ? gross*(val/100) : val;
+  amt = Math.max(0, Math.min(amt, gross));
+  return Math.round(amt);
+}
+function orderTotal(o){ return Math.max(orderGrossTotal(o) - orderDiscountAmount(o), 0); }
+/* المتبقي بيتحسب لحظيًا من الإجمالي الحالي وليس من رقم مخزن، عشان يفضل متطابق مع الإجمالي دايمًا */
+function orderRemaining(o){ return Math.max(orderTotal(o) - (Number(o.deposit)||0), 0); }
 function orderCostTotal(o){ return orderItems(o).reduce((s,it)=>s + (Number(it.cost)||0), 0); }
+function orderManufacturingTotal(o){ return orderItems(o).reduce((s,it)=>s + (Number(it.manufacturing)||0), 0); }
+function monthKey(d){ d=new Date(d); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function monthLabel(key){ const [y,m]=key.split('-').map(Number); const d=new Date(y,m-1,1); return d.toLocaleDateString('ar-EG',{month:'long',year:'numeric'}); }
+function availableMonths(){
+  const set = new Set();
+  DB.orders.forEach(o=>{ if(o.createdAt) set.add(monthKey(o.createdAt)); });
+  set.add(monthKey(new Date()));
+  return Array.from(set).sort().reverse();
+}
+let dashMfgMonth = null;
+let dashProfitMonth = null;
+const DEV_FUND_PCT = 0.10; /* نسبة صندوق التطوير من صافي ربح الشهر */
 /* بتحسب تكلفة الخامة للبنود القديمة اللي اتسجلت من غير تكلفة، بالرجوع لتكلفة المنتج الافتراضية */
 function backfillOrderCostsFromProducts(){
   let itemsUpdated = 0, ordersUpdated = 0;
@@ -942,8 +987,12 @@ function backfillOrderCostsFromProducts(){
           const p = DB.products.find(x=>x.name===it.productName);
           if(p && p.defaultCost){ it.cost = p.defaultCost; itemsUpdated++; orderChanged = true; }
         }
+        if((!it.manufacturing || Number(it.manufacturing)===0) && it.productName){
+          const p = DB.products.find(x=>x.name===it.productName);
+          if(p && p.defaultManufacturing){ it.manufacturing = p.defaultManufacturing; orderChanged = true; }
+        }
       });
-      if(orderChanged) o.cost = orderCostTotal(o);
+      if(orderChanged){ o.cost = orderCostTotal(o); o.manufacturing = orderManufacturingTotal(o); }
     } else if(o.productName && (!o.cost || Number(o.cost)===0)){
       const p = DB.products.find(x=>x.name===o.productName);
       if(p && p.defaultCost){ o.cost = p.defaultCost; itemsUpdated++; orderChanged = true; }
@@ -1138,6 +1187,12 @@ function customerOptionsHtml(selectedId){
 let currentItemImages = {}; /* { itemId: [dataUrl...] } */
 let formItemIds = [];
 
+/* إضافة كرانيش: تكلفة خامة إضافية + مصنعية إضافية + هامش ربح إضافي على البند */
+const KRANISH_COST = 40;
+const KRANISH_MANUFACTURING = 30;
+const KRANISH_PROFIT = 30;
+const KRANISH_PRICE_DELTA = KRANISH_COST + KRANISH_MANUFACTURING + KRANISH_PROFIT; /* بيتضاف على سعر البيع عشان الربح يزيد فعلاً بـ 30 */
+
 function emptyFormItem(seed){
   seed = seed || {};
   return {
@@ -1148,8 +1203,10 @@ function emptyFormItem(seed){
     quantity: seed.quantity || 1,
     price: seed.price ?? '',
     cost: seed.cost ?? '',
+    manufacturing: seed.manufacturing ?? '',
     notes: seed.notes || '',
-    done: !!seed.done
+    done: !!seed.done,
+    kranish: !!seed.kranish
   };
 }
 function syncFormItemFromDom(itemId){
@@ -1164,8 +1221,10 @@ function syncFormItemFromDom(itemId){
     quantity: Number(sec.querySelector('[data-f="qty"]')?.value) || 1,
     price: sec.querySelector('[data-f="price"]')?.value ?? '',
     cost: sec.querySelector('[data-f="cost"]')?.value ?? 0,
+    manufacturing: sec.querySelector('[data-f="manufacturing"]')?.value ?? 0,
     notes: (sec.querySelector('[data-f="notes"]')?.value || '').trim(),
-    done: !!sec.querySelector('[data-f="done"]')?.checked
+    done: !!sec.querySelector('[data-f="done"]')?.checked,
+    kranish: !!sec.querySelector('[data-f="kranish"]')?.checked
   };
 }
 function collectFormItemsState(){
@@ -1181,8 +1240,10 @@ function collectFormItemsState(){
         quantity: Number(sec.querySelector('[data-f="qty"]')?.value) || 1,
         price: sec.querySelector('[data-f="price"]')?.value ?? '',
         cost: sec.querySelector('[data-f="cost"]')?.value ?? 0,
+        manufacturing: sec.querySelector('[data-f="manufacturing"]')?.value ?? 0,
         notes: (sec.querySelector('[data-f="notes"]')?.value || '').trim(),
-        done: !!sec.querySelector('[data-f="done"]')?.checked
+        done: !!sec.querySelector('[data-f="done"]')?.checked,
+        kranish: !!sec.querySelector('[data-f="kranish"]')?.checked
       };
     });
   }
@@ -1230,6 +1291,14 @@ function itemSectionHtml(item, index, total){
           <div class="field"><label>سعر القطعة</label><input data-f="price" type="number" min="0" value="${item.price??''}" placeholder="0"></div>
           <div class="field"><label>تكلفة الخامة</label><input data-f="cost" type="number" min="0" value="${item.cost??''}" placeholder="0"></div>
         </div>
+        <div class="field"><label>المصنعية</label><input data-f="manufacturing" type="number" min="0" value="${item.manufacturing??''}" placeholder="0"></div>
+        <div class="kranish-box">
+          <input type="checkbox" data-f="kranish" ${item.kranish?'checked':''}>
+          <div>
+            <label>إضافة كرانيش</label>
+            <div class="kranish-hint">لو مفعّلة، بيتضاف ${KRANISH_COST} جنيه على تكلفة الخامة، و${KRANISH_MANUFACTURING} جنيه على المصنعية، وبيزيد سعر البيع بمقدار ${KRANISH_PRICE_DELTA} جنيه (يعني ${KRANISH_PROFIT} جنيه ربح صافي زيادة)</div>
+          </div>
+        </div>
         <div class="field" style="margin-bottom:0;"><label>ملاحظات البند</label><textarea data-f="notes" placeholder="تفاصيل خاصة بالموديل ده...">${item.notes||''}</textarea></div>
       </div>
     </div>
@@ -1251,8 +1320,21 @@ function bindItemSectionEvents(sec){
     const p = DB.products.find(x=>x.name===pname.value);
     const priceEl = sec.querySelector('[data-f="price"]');
     const costEl = sec.querySelector('[data-f="cost"]');
+    const mfgEl = sec.querySelector('[data-f="manufacturing"]');
     if(p && p.defaultPrice && priceEl && !priceEl.value) priceEl.value = p.defaultPrice;
     if(p && p.defaultCost && costEl && !costEl.value) costEl.value = p.defaultCost;
+    if(p && p.defaultManufacturing && mfgEl && !mfgEl.value) mfgEl.value = p.defaultManufacturing;
+  });
+  const kranishCb = sec.querySelector('[data-f="kranish"]');
+  if(kranishCb) kranishCb.addEventListener('change', ()=>{
+    const costEl = sec.querySelector('[data-f="cost"]');
+    const priceEl = sec.querySelector('[data-f="price"]');
+    const mfgEl = sec.querySelector('[data-f="manufacturing"]');
+    const sign = kranishCb.checked ? 1 : -1;
+    if(costEl) costEl.value = Math.max((Number(costEl.value)||0) + sign*KRANISH_COST, 0);
+    if(mfgEl) mfgEl.value = Math.max((Number(mfgEl.value)||0) + sign*KRANISH_MANUFACTURING, 0);
+    if(priceEl) priceEl.value = Math.max((Number(priceEl.value)||0) + sign*KRANISH_PRICE_DELTA, 0);
+    showToast(kranishCb.checked ? 'اتضافت تكلفة وربح الكرانيش على البند' : 'اتشالت إضافة الكرانيش من البند');
   });
   const imgInput = sec.querySelector('.item-images-input');
   if(imgInput) imgInput.addEventListener('change', async ()=>{
@@ -1300,8 +1382,16 @@ async function openOrderForm(existingId){
     </div>`;
 
   document.getElementById('of-pricing-fields').innerHTML = `
-    <div class="field"><label>العربون (على الأوردر كامل)</label><input id="f-deposit" type="number" min="0" value="${o.deposit??0}" placeholder="0"></div>
-    <p class="hint">الإجمالي بيتحسب من مجموع أسعار كل البنود × كمياتها. المتبقي = الإجمالي − العربون</p>`;
+    <div class="field-row">
+      <div class="field"><label>نوع الخصم</label><select id="f-disc-type">
+        <option value="none" ${(!o.discountType||o.discountType==='none')?'selected':''}>بدون خصم</option>
+        <option value="percent" ${o.discountType==='percent'?'selected':''}>نسبة مئوية %</option>
+        <option value="amount" ${o.discountType==='amount'?'selected':''}>مبلغ بالجنيه</option>
+      </select></div>
+      <div class="field"><label>قيمة الخصم</label><input id="f-disc-value" type="number" min="0" value="${o.discountValue??0}" placeholder="0"></div>
+    </div>
+    <div class="field"><label>العربون (على الأوردر بعد الخصم)</label><input id="f-deposit" type="number" min="0" value="${o.deposit??0}" placeholder="0"></div>
+    <p class="hint">الإجمالي بيتحسب من مجموع أسعار كل البنود × كمياتها، وبعدين بينخصم منه الخصم (لو موجود). المتبقي = الإجمالي بعد الخصم − العربون</p>`;
 
   document.getElementById('of-shipping-fields').innerHTML = `
     <div class="field"><label>نوع الشحن</label><select id="f-shiptype">
@@ -1366,21 +1456,29 @@ function readOrderForm(existing){
     quantity: Number(it.quantity)||1,
     price: Number(it.price)||0,
     cost: Number(it.cost)||0,
+    manufacturing: Number(it.manufacturing)||0,
     notes: it.notes||'',
-    done: !!it.done
+    done: !!it.done,
+    kranish: !!it.kranish
   }));
   if(!items.length){ showToast('أضف بند طلب واحد على الأقل'); return null; }
   for(let i=0;i<items.length;i++){
     if(!items[i].productName){ showToast('من فضلك أدخل اسم المنتج في البند '+(i+1)); return null; }
   }
   const deposit = Number(document.getElementById('f-deposit').value)||0;
-  const total = items.reduce((s,it)=>s + it.price*it.quantity, 0);
+  const grossTotal = items.reduce((s,it)=>s + it.price*it.quantity, 0);
+  const discountType = document.getElementById('f-disc-type').value || 'none';
+  const discountValue = Number(document.getElementById('f-disc-value').value)||0;
+  const discountAmount = orderDiscountAmount({items, discountType, discountValue});
+  const total = Math.max(grossTotal - discountAmount, 0);
   const first = items[0];
   const data = {
     id: existing ? existing.id : uid(), customerId,
     items,
     productName: first.productName,
     color: first.color, size: first.size, quantity: first.quantity, price: first.price, cost: orderCostTotal({items}),
+    manufacturing: orderManufacturingTotal({items}),
+    discountType, discountValue,
     deposit,
     remaining: Math.max(total - deposit, 0),
     shippingType: document.getElementById('f-shiptype').value, shippingPrice: Number(document.getElementById('f-shipprice').value)||0,
@@ -1447,10 +1545,10 @@ function renderOrdersList(){
     const canEdit = can('editOrder');
     return `<tr>
       <td class="muted num">#${o.id.slice(-4).toUpperCase()}</td>
-      <td class="clickable"><div class="cell-person"><div class="avatar" style="width:30px;height:30px;font-size:11px;">${initials(c?c.name:'?')}</div><div><div class="nm">${c?c.name:'—'}</div>${o.remaining>0?`<div class="sub" style="color:var(--amber);font-weight:700;">متبقي ${fmtMoney(o.remaining)}</div>`:(o.deposit>0?'<div class="sub" style="color:var(--teal);font-weight:700;">مدفوع بالكامل</div>':'')}</div></div></td>
+      <td class="clickable"><div class="cell-person"><div class="avatar" style="width:30px;height:30px;font-size:11px;">${initials(c?c.name:'?')}</div><div><div class="nm">${c?c.name:'—'}</div>${orderRemaining(o)>0?`<div class="sub" style="color:var(--amber);font-weight:700;">متبقي ${fmtMoney(orderRemaining(o))}</div>`:(o.deposit>0?'<div class="sub" style="color:var(--teal);font-weight:700;">مدفوع بالكامل</div>':'')}</div></div></td>
       <td class="muted num">${c?c.phone:'—'}</td>
       <td>${orderProductLabel(o)}</td>
-      <td class="num money-only">${fmtMoney(orderTotal(o))}</td>
+      <td class="num money-only">${fmtMoney(orderTotal(o))}${orderDiscountAmount(o)>0?`<div class="sub" style="color:var(--red);font-weight:700;">خصم ${o.discountType==='percent'?(o.discountValue+'%'):fmtMoney(orderDiscountAmount(o))}</div>`:''}</td>
       <td>${priorityBadge(o.priority)}</td>
       <td>${badge(o.status)}</td>
       <td class="muted">${fmtDate(o.createdAt)}</td>
@@ -1498,11 +1596,15 @@ async function renderOrderDetails(id){
     ${c&&canView('customer-details')?'<button class="btn btn-ghost btn-sm" id="goto-customer" style="margin-top:10px;width:100%;">عرض بيانات العميل بالكامل</button>':''}`;
   if(c && canView('customer-details')) document.getElementById('goto-customer').onclick = ()=>{ renderCustomerDetails(c.id); goTo('customer-details'); };
 
+  const gross = orderGrossTotal(o);
+  const discountAmt = orderDiscountAmount(o);
   const total = orderTotal(o);
   const deposit = o.deposit||0;
-  const remaining = o.remaining!=null ? o.remaining : Math.max(total-deposit,0);
+  const remaining = orderRemaining(o);
   document.getElementById('od-financial').innerHTML = `
-    <div class="kv"><span>الإجمالي</span><span>${fmtMoney(total)}</span></div>
+    ${discountAmt>0?`<div class="kv"><span>الإجمالي قبل الخصم</span><span>${fmtMoney(gross)}</span></div>
+    <div class="kv"><span>الخصم${o.discountType==='percent'?(' ('+o.discountValue+'%)'):''}</span><span style="color:var(--red);font-weight:700;">- ${fmtMoney(discountAmt)}</span></div>`:''}
+    <div class="kv"><span>الإجمالي${discountAmt>0?' بعد الخصم':''}</span><span style="font-weight:800;">${fmtMoney(total)}</span></div>
     <div class="kv"><span>العربون المدفوع</span><span>${fmtMoney(deposit)}</span></div>
     <div class="kv"><span>المتبقي على العميل</span><span style="font-weight:800;color:${remaining>0?'var(--amber)':'var(--teal)'}">${fmtMoney(remaining)}</span></div>
     ${remaining>0
@@ -1523,7 +1625,7 @@ async function renderOrderDetails(id){
         <div class="left">
           <div class="order-item-num">${idx+1}</div>
           <div>
-            <h3 class="order-item-title">${it.productName||'—'}</h3>
+            <h3 class="order-item-title">${it.productName||'—'}${it.kranish?'<span class="kranish-badge">+ كرانيش</span>':''}</h3>
             <div class="hint" style="margin:2px 0 0;">${it.color||'—'} · مقاس ${it.size||'—'} · كمية ${it.quantity||1}</div>
           </div>
         </div>
@@ -1708,6 +1810,7 @@ async function openProductForm(existingId){
     <div class="field"><label>اسم / موديل المنتج</label><input id="pf-name" value="${p.name||''}" placeholder="مثال: كنبة 3 مقاعد"></div>
     <div class="field-row"><div class="field"><label>السعر</label><input id="pf-price" type="number" min="0" value="${p.defaultPrice??''}" placeholder="0"></div>
     <div class="field"><label>التكلفة (اختياري)</label><input id="pf-cost" type="number" min="0" value="${p.defaultCost??''}" placeholder="0"></div></div>
+    <div class="field"><label>المصنعية (اختياري)</label><input id="pf-manufacturing" type="number" min="0" value="${p.defaultManufacturing??''}" placeholder="0"></div>
     <div class="field"><label>وصف مختصر (اختياري)</label><textarea id="pf-desc" placeholder="خامة، تفاصيل التصنيع...">${p.description||''}</textarea></div>`;
   renderProductImagePreview();
   const input = document.getElementById('pf-image-input');
@@ -1729,7 +1832,7 @@ document.getElementById('pf-save').addEventListener('click', async ()=>{
   if(!can('manageProducts')) return denyAccess();
   const name = document.getElementById('pf-name').value.trim();
   if(!name){ showToast('من فضلك أدخل اسم المنتج'); return; }
-  const data = { name, defaultPrice:Number(document.getElementById('pf-price').value)||0, defaultCost:Number(document.getElementById('pf-cost').value)||0, description:document.getElementById('pf-desc').value.trim() };
+  const data = { name, defaultPrice:Number(document.getElementById('pf-price').value)||0, defaultCost:Number(document.getElementById('pf-cost').value)||0, defaultManufacturing:Number(document.getElementById('pf-manufacturing').value)||0, description:document.getElementById('pf-desc').value.trim() };
   let id;
   if(editingProductId){ const existing = DB.products.find(p=>p.id===editingProductId); Object.assign(existing, data); id = existing.id; }
   else{ id = uid(); DB.products.push({id, ...data, createdAt:todayISO()}); }
@@ -1747,11 +1850,12 @@ function renderProductsList(){
   const tbody = document.getElementById('products-table');
   tbody.innerHTML = list.map(p=>{
     const ordersCount = DB.orders.filter(o=>orderMatchesProduct(o, p.name)).length;
-    const profit = (p.defaultPrice||0) - (p.defaultCost||0);
+    const profit = (p.defaultPrice||0) - (p.defaultCost||0) - (p.defaultManufacturing||0);
     const cached = productImageCache[p.id];
     return `<tr>
       <td><div class="cell-product">${cached?'<img class="prod-thumb" src="'+cached+'">':'<div class="prod-thumb-ph" data-imgph="'+p.id+'"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/></svg></div>'}<span class="nm">${p.name}</span></div></td>
       <td class="num">${fmtMoney(p.defaultPrice)}</td><td class="num muted">${p.defaultCost?fmtMoney(p.defaultCost):'—'}</td>
+      <td class="num muted">${p.defaultManufacturing?fmtMoney(p.defaultManufacturing):'—'}</td>
       <td class="num" style="color:var(--teal);font-weight:700;">${fmtMoney(profit)}</td><td class="num">${ordersCount}</td>
       <td><div class="row-actions"><button class="icon-action" data-edit="${p.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
       <button class="icon-action danger" data-del="${p.id}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button></div></td>
@@ -2055,7 +2159,7 @@ function renderDonut(elId, segments){
 /* ================= DASHBOARD ================= */
 function topProducts(orders){ const map={}; orders.forEach(o=>{ orderItems(o).forEach(it=>{ map[it.productName]=(map[it.productName]||0)+(Number(it.quantity)||1); }); }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5); }
 function topCustomers(orders){ const map={}; orders.forEach(o=>{ const c=getCustomer(o.customerId); if(!c) return; map[c.id]=(map[c.id]||0)+orderTotal(o); }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,total])=>[getCustomer(id)?.name||'—', total]); }
-function topDebtors(){ const map={}; DB.orders.filter(o=>o.status!=='Delivered' && o.remaining>0).forEach(o=>{ const c=getCustomer(o.customerId); if(!c) return; map[c.id]=(map[c.id]||0)+o.remaining; }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,total])=>[getCustomer(id)?.name||'—', total]); }
+function topDebtors(){ const map={}; DB.orders.filter(o=>o.status!=='Delivered' && orderRemaining(o)>0).forEach(o=>{ const c=getCustomer(o.customerId); if(!c) return; map[c.id]=(map[c.id]||0)+orderRemaining(o); }); return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([id,total])=>[getCustomer(id)?.name||'—', total]); }
 function renderRankList(elId, entries, isCount, subtitle){
   const el = document.getElementById(elId);
   if(!entries.length){ el.innerHTML = '<div class="empty" style="padding:20px;"><p>لا توجد بيانات كافية بعد</p></div>'; return; }
@@ -2073,7 +2177,7 @@ function renderDashboard(){
   const netProfit = totalProfit - totalExpenses;
   const profitMargin = totalSales>0 ? Math.round((totalProfit/totalSales)*1000)/10 : 0;
   const avgOrderValue = DB.orders.length ? Math.round(totalSales/DB.orders.length) : 0;
-  const outstandingDue = DB.orders.filter(o=>o.status!=='Delivered').reduce((s,o)=>s+o.remaining,0);
+  const outstandingDue = DB.orders.filter(o=>o.status!=='Delivered').reduce((s,o)=>s+orderRemaining(o),0);
   const dueSoon = DB.orders.filter(o=>o.status!=='Delivered' && o.dueDate && (new Date(o.dueDate)-new Date())/86400000 <= 3 && (new Date(o.dueDate)-new Date())/86400000 >= 0).length;
   const overdueCount = DB.orders.filter(o=>o.status!=='Delivered' && o.dueDate && new Date(o.dueDate) < new Date()).length;
 
@@ -2092,6 +2196,36 @@ function renderDashboard(){
     <div class="stat-card"><div class="stat-top"><span class="label">إجمالي المصاريف</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div></div><div class="stat-num">${fmtMoney(totalExpenses)}</div><div class="trend neutral">كل الفترة</div></div>
     <div class="stat-card"><div class="stat-top"><span class="label">صافي الربح بعد المصاريف</span><div class="stat-icon" style="background:${netProfit>=0?'var(--teal-soft)':'var(--red-soft)'};color:${netProfit>=0?'var(--teal)':'var(--red)'};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(netProfit)}</div><div class="trend ${netProfit>=0?'neutral':'down'}">كل الفترة</div></div>
     <div class="stat-card"><div class="stat-top"><span class="label">هامش الربح</span><div class="stat-icon" style="background:var(--cyan-soft);color:var(--cyan);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 8l-5 5-3-3-4 4"/></svg></div></div><div class="stat-num">${profitMargin}%</div><div class="trend neutral">من إجمالي المبيعات</div></div>`;
+
+  const months = availableMonths();
+  if(!dashMfgMonth || !months.includes(dashMfgMonth)) dashMfgMonth = monthKey(new Date());
+  const mfgSelect = document.getElementById('dash-mfg-month');
+  mfgSelect.innerHTML = months.map(k=>'<option value="'+k+'" '+(k===dashMfgMonth?'selected':'')+'>'+monthLabel(k)+'</option>').join('');
+  mfgSelect.onchange = ()=>{ dashMfgMonth = mfgSelect.value; renderDashboard(); };
+  const mfgOrders = DB.orders.filter(o=>o.createdAt && monthKey(o.createdAt)===dashMfgMonth);
+  const mfgTotal = mfgOrders.reduce((s,o)=>s+orderManufacturingTotal(o),0);
+  const mfgItemsCount = mfgOrders.reduce((s,o)=>s+orderItems(o).length,0);
+  document.getElementById('dash-stats-mfg').innerHTML = `
+    <div class="stat-card"><div class="stat-top"><span class="label">إجمالي المصنعية</span><div class="stat-icon" style="background:var(--violet-soft);color:var(--violet);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div></div><div class="stat-num">${fmtMoney(mfgTotal)}</div><div class="trend neutral">${monthLabel(dashMfgMonth)}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">عدد الأوردرات في الشهر ده</span><div class="stat-icon" style="background:var(--teal-soft);color:var(--teal);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div><div class="stat-num">${mfgOrders.length}</div><div class="trend neutral">${monthLabel(dashMfgMonth)}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">عدد البنود في الشهر ده</span><div class="stat-icon" style="background:var(--amber-soft);color:var(--amber);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg></div></div><div class="stat-num">${mfgItemsCount}</div><div class="trend neutral">${monthLabel(dashMfgMonth)}</div></div>`;
+
+  if(!dashProfitMonth || !months.includes(dashProfitMonth)) dashProfitMonth = monthKey(new Date());
+  const profitSelect = document.getElementById('dash-profit-month');
+  profitSelect.innerHTML = months.map(k=>'<option value="'+k+'" '+(k===dashProfitMonth?'selected':'')+'>'+monthLabel(k)+'</option>').join('');
+  profitSelect.onchange = ()=>{ dashProfitMonth = profitSelect.value; renderDashboard(); };
+  const profitOrders = DB.orders.filter(o=>o.createdAt && monthKey(o.createdAt)===dashProfitMonth);
+  const monthSales = profitOrders.reduce((s,o)=>s+orderTotal(o),0);
+  const monthCost = profitOrders.reduce((s,o)=>s+orderCostTotal(o),0);
+  const monthMfg = profitOrders.reduce((s,o)=>s+orderManufacturingTotal(o),0);
+  const monthProfit = monthSales - monthCost - monthMfg;
+  const devFund = monthProfit>0 ? Math.round(monthProfit*DEV_FUND_PCT) : 0;
+  const netAfterDev = monthProfit - devFund;
+  document.getElementById('dash-stats-profit').innerHTML = `
+    <div class="stat-card"><div class="stat-top"><span class="label">مبيعات الشهر</span><div class="stat-icon" style="background:var(--amber-soft);color:var(--amber);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div></div><div class="stat-num">${fmtMoney(monthSales)}</div><div class="trend neutral">${monthLabel(dashProfitMonth)}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">ربح الشهر (بعد التكلفة والمصنعية)</span><div class="stat-icon" style="background:var(--violet-soft);color:var(--violet);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div></div><div class="stat-num">${fmtMoney(monthProfit)}</div><div class="trend neutral">${monthLabel(dashProfitMonth)}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">صندوق التطوير (10%)</span><div class="stat-icon" style="background:var(--cyan-soft);color:var(--cyan);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.5 6.5L21 9l-5 4.5L17.5 21 12 17l-5.5 4L8 13.5 3 9l6.5-.5z"/></svg></div></div><div class="stat-num">${fmtMoney(devFund)}</div><div class="trend neutral">من ربح ${monthLabel(dashProfitMonth)}</div></div>
+    <div class="stat-card"><div class="stat-top"><span class="label">صافي الربح بعد التطوير</span><div class="stat-icon" style="background:${netAfterDev>=0?'var(--teal-soft)':'var(--red-soft)'};color:${netAfterDev>=0?'var(--teal)':'var(--red)'};"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg></div></div><div class="stat-num">${fmtMoney(netAfterDev)}</div><div class="trend ${netAfterDev>=0?'neutral':'down'}">${monthLabel(dashProfitMonth)}</div></div>`;
 
   document.getElementById('dash-stats-2').innerHTML = `
     <div class="stat-card"><div class="stat-top"><span class="label">مستحقات لم تُحصّل بعد</span><div class="stat-icon" style="background:var(--red-soft);color:var(--red);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div><div class="stat-num">${fmtMoney(outstandingDue)}</div><div class="trend down">من أوردرات لسه ما اتسلمتش</div></div>
