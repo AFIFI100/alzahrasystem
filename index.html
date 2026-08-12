@@ -660,6 +660,11 @@ body.perm-no-money .money-only{display:none !important;}
             <button class="btn btn-primary" id="set-save">حفظ التغييرات</button>
           </div>
         </div>
+        <div class="panel" style="margin-top:16px;">
+          <div class="card-title">صيانة البيانات</div>
+          <p class="hint" style="margin-bottom:12px;">لو حدّثت تكلفة منتج في صفحة "المنتجات" وعايز الأوردرات القديمة اللي متسجلة بتكلفة صفر تاخد التكلفة الجديدة، دوس الزرار ده.</p>
+          <button class="btn btn-ghost" id="btn-recalc-costs">إعادة حساب تكلفة الأوردرات القديمة من المنتجات</button>
+        </div>
       </section>
 
     </div>
@@ -926,6 +931,27 @@ function orderItems(o){
 }
 function orderTotal(o){ return orderItems(o).reduce((s,it)=>s + (Number(it.price)||0)*(Number(it.quantity)||1), 0); }
 function orderCostTotal(o){ return orderItems(o).reduce((s,it)=>s + (Number(it.cost)||0), 0); }
+/* بتحسب تكلفة الخامة للبنود القديمة اللي اتسجلت من غير تكلفة، بالرجوع لتكلفة المنتج الافتراضية */
+function backfillOrderCostsFromProducts(){
+  let itemsUpdated = 0, ordersUpdated = 0;
+  DB.orders.forEach(o=>{
+    let orderChanged = false;
+    if(Array.isArray(o.items) && o.items.length){
+      o.items.forEach(it=>{
+        if((!it.cost || Number(it.cost)===0) && it.productName){
+          const p = DB.products.find(x=>x.name===it.productName);
+          if(p && p.defaultCost){ it.cost = p.defaultCost; itemsUpdated++; orderChanged = true; }
+        }
+      });
+      if(orderChanged) o.cost = orderCostTotal(o);
+    } else if(o.productName && (!o.cost || Number(o.cost)===0)){
+      const p = DB.products.find(x=>x.name===o.productName);
+      if(p && p.defaultCost){ o.cost = p.defaultCost; itemsUpdated++; orderChanged = true; }
+    }
+    if(orderChanged) ordersUpdated++;
+  });
+  return { itemsUpdated, ordersUpdated };
+}
 function orderProductLabel(o){
   const items = orderItems(o);
   if(!items.length) return '—';
@@ -1121,7 +1147,7 @@ function emptyFormItem(seed){
     size: seed.size || '',
     quantity: seed.quantity || 1,
     price: seed.price ?? '',
-    cost: seed.cost ?? 0,
+    cost: seed.cost ?? '',
     notes: seed.notes || '',
     done: !!seed.done
   };
@@ -1202,7 +1228,7 @@ function itemSectionHtml(item, index, total){
         </div>
         <div class="field-row">
           <div class="field"><label>سعر القطعة</label><input data-f="price" type="number" min="0" value="${item.price??''}" placeholder="0"></div>
-          <div class="field"><label>تكلفة الخامة</label><input data-f="cost" type="number" min="0" value="${item.cost??0}" placeholder="0"></div>
+          <div class="field"><label>تكلفة الخامة</label><input data-f="cost" type="number" min="0" value="${item.cost??''}" placeholder="0"></div>
         </div>
         <div class="field" style="margin-bottom:0;"><label>ملاحظات البند</label><textarea data-f="notes" placeholder="تفاصيل خاصة بالموديل ده...">${item.notes||''}</textarea></div>
       </div>
@@ -1224,7 +1250,9 @@ function bindItemSectionEvents(sec){
   if(pname) pname.addEventListener('change', ()=>{
     const p = DB.products.find(x=>x.name===pname.value);
     const priceEl = sec.querySelector('[data-f="price"]');
+    const costEl = sec.querySelector('[data-f="cost"]');
     if(p && p.defaultPrice && priceEl && !priceEl.value) priceEl.value = p.defaultPrice;
+    if(p && p.defaultCost && costEl && !costEl.value) costEl.value = p.defaultCost;
   });
   const imgInput = sec.querySelector('.item-images-input');
   if(imgInput) imgInput.addEventListener('change', async ()=>{
@@ -1975,8 +2003,18 @@ function renderSettings(){
 }
 document.getElementById('set-save').addEventListener('click', async ()=>{
   if(!can('manageSettings')) return denyAccess();
-  SETTINGS = { workshopName: document.getElementById('set-name').value.trim(), phone: document.getElementById('set-phone').value.trim(), address: document.getElementById('set-address').value.trim(), currency: document.getElementById('set-currency').value };
+  Object.assign(SETTINGS, { workshopName: document.getElementById('set-name').value.trim(), phone: document.getElementById('set-phone').value.trim(), address: document.getElementById('set-address').value.trim(), currency: document.getElementById('set-currency').value });
   try{ await appStorage.set('settings', JSON.stringify(SETTINGS), true); showToast('تم حفظ الإعدادات'); }catch(e){ showToast('حصل خطأ في الحفظ'); }
+});
+document.getElementById('btn-recalc-costs').addEventListener('click', async ()=>{
+  if(!can('manageSettings')) return denyAccess();
+  const result = backfillOrderCostsFromProducts();
+  if(result.itemsUpdated){
+    await persist('orders');
+    showToast(`تم تحديث تكلفة ${result.itemsUpdated} بند في ${result.ordersUpdated} أوردر`);
+  } else {
+    showToast('كل الأوردرات متسجلة بتكلفة بالفعل، مفيش حاجة للتحديث');
+  }
 });
 
 /* ================= CHARTS ================= */
@@ -2110,6 +2148,12 @@ function renderReports(){
   if(foot) foot.textContent = 'الزهراء — 01116730673' + (SUPABASE_CONFIGURED ? ' · متصل بقاعدة بيانات سحابية' : ' · تخزين محلي على الجهاز');
   try{
     await loadAll();
+    if(!SETTINGS.costsBackfilledV1){
+      const result = backfillOrderCostsFromProducts();
+      SETTINGS.costsBackfilledV1 = true;
+      await appStorage.set('settings', JSON.stringify(SETTINGS), true);
+      if(result.itemsUpdated) await persist('orders');
+    }
   }catch(e){
     console.error(e);
     if(foot) foot.textContent = 'تعذّر الاتصال بقاعدة البيانات، تأكد من بيانات الاتصال';
