@@ -248,6 +248,9 @@ textarea{resize:vertical;min-height:70px;}
 .kv span:last-child{font-weight:700;}
 .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;}
 .toast{position:fixed;bottom:24px;right:50%;transform:translateX(50%);background:var(--navy);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.3px;font-weight:700;box-shadow:var(--shadow-pop);z-index:100;opacity:0;pointer-events:none;transition:.25s;}
+.scroll-top-btn{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);width:46px;height:46px;border-radius:50%;background:var(--primary);color:#fff;border:none;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-pop);cursor:pointer;z-index:45;opacity:0;pointer-events:none;transition:.22s;}
+.scroll-top-btn.show{opacity:1;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+.scroll-top-btn:hover{filter:brightness(1.08);}
 .toast.show{opacity:1;transform:translateX(50%) translateY(-6px);}
 .back-link{display:inline-flex;align-items:center;gap:6px;color:var(--ink-soft);font-size:13px;font-weight:700;cursor:pointer;margin-bottom:12px;background:none;border:none;padding:0;}
 .back-link:hover{color:var(--primary);}
@@ -375,6 +378,7 @@ body.perm-no-money .money-only{display:none !important;}
     <nav class="nav" id="nav">
       <button class="navlink" data-view="dashboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>لوحة التحكم</button>
       <button class="navlink" data-view="orders"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h10"/></svg>الأوردرات</button>
+      <button class="navlink" data-view="batches"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>الطلبيات</button>
       <button class="navlink" data-view="customers"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3.3"/><path d="M5 20c1-3.8 4-6 7-6s6 2.2 7 6"/></svg>العملاء</button>
       <button class="navlink" data-view="products"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>المنتجات</button>
       <button class="navlink" data-view="expenses"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>المصاريف</button>
@@ -517,6 +521,7 @@ body.perm-no-money .money-only{display:none !important;}
           <div style="display:flex;gap:8px;"><button class="btn btn-ghost" data-view="orders">إلغاء</button><button class="btn btn-primary" id="of-save"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6L9 17l-5-5"/></svg>حفظ الأوردر</button></div>
         </div>
         <div class="panel"><div class="card-title">بيانات العميل</div><div id="of-customer-fields"></div></div>
+        <div class="panel"><div class="card-title">الطلبية (اختياري)</div><div id="of-batch-fields"></div></div>
         <div class="panel"><div class="card-title">مصدر العميل</div><div id="of-source-fields"></div></div>
         <div style="margin-bottom:8px;">
           <div class="card-title" style="margin-bottom:10px;">بنود الطلب <span class="hint" style="font-weight:600;">(كل موديل / مقاس في قسم منفصل)</span></div>
@@ -534,6 +539,33 @@ body.perm-no-money .money-only{display:none !important;}
           </div>
         </div>
         <div class="panel"><div class="card-title">أخرى</div><div id="of-other-fields"></div></div>
+      </section>
+
+      <!-- BATCHES LIST -->
+      <section class="view" id="view-batches">
+        <div class="page-head"><div><h1>الطلبيات</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; الطلبيات</div></div><button class="btn btn-primary" id="btn-new-batch"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>طلبية جديدة</button></div>
+        <div class="filterbar"><div class="search-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg><input id="batches-search" placeholder="ابحث باسم أو رقم الطلبية..."></div></div>
+        <div class="panel" style="padding-top:6px;">
+          <div class="table-wrap"><table><thead><tr><th>اسم / رقم الطلبية</th><th>التاريخ</th><th>عدد الأوردرات</th><th>عدد البنود</th><th class="money-only">إجمالي المبيعات</th><th>إجراءات</th></tr></thead><tbody id="batches-table"></tbody></table></div>
+          <div class="empty" id="batches-empty" style="display:none;"><b>لا يوجد طلبيات بعد</b><p>أضف أول طلبية عشان تجمع تحتها أوردرات معينة للمتابعة</p></div>
+          <div class="pagination" id="batches-pagination"></div>
+        </div>
+      </section>
+
+      <!-- BATCH DETAILS -->
+      <section class="view" id="view-batch-details">
+        <button class="back-link" data-view="batches"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M9 18l6-6-6-6"/></svg>رجوع للطلبيات</button>
+        <div class="page-head"><div><h1 id="bd-title">بيانات الطلبية</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; <b>الطلبيات</b> &gt; <span id="bd-crumb"></span></div></div>
+          <div style="display:flex;gap:8px;"><button class="btn btn-ghost" id="bd-edit">تعديل</button><button class="btn btn-danger" id="bd-delete">حذف</button></div>
+        </div>
+        <div class="grid-2">
+          <div class="panel"><div class="card-title">بيانات الطلبية</div><div id="bd-body"></div></div>
+          <div class="panel">
+            <div class="card-title">أوردرات الطلبية</div>
+            <button class="btn btn-primary btn-sm" id="bd-add-order" style="margin:6px 0 12px;width:100%;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="vertical-align:-2px;margin-left:4px;"><path d="M12 5v14M5 12h14"/></svg>أضف أوردر للطلبية دي</button>
+            <div class="card-list" id="bd-orders"></div>
+          </div>
+        </div>
       </section>
 
       <!-- CUSTOMERS LIST -->
@@ -692,6 +724,7 @@ body.perm-no-money .money-only{display:none !important;}
 
 <div id="modal-root"></div>
 <div class="toast" id="toast"></div>
+<button class="scroll-top-btn" id="scroll-top-btn" title="ارجع لأعلى الصفحة"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
 
 <script>
 /* ================= STORAGE LAYER ================= */
@@ -748,11 +781,11 @@ const localStorageBackend = {
 };
 
 const appStorage = SUPABASE_CONFIGURED ? supabaseStorage : localStorageBackend;
-const DB = { customers: [], products: [], orders: [], users: [], expenses: [], campaigns: [] };
+const DB = { customers: [], products: [], orders: [], users: [], expenses: [], campaigns: [], batches: [] };
 let SETTINGS = { workshopName:'الزهراء', phone:'01116730673', address:'', currency:'ج.م' };
 
 async function loadAll(){
-  for(const key of ['customers','products','orders','users','expenses','campaigns']){
+  for(const key of ['customers','products','orders','users','expenses','campaigns','batches']){
     try{ const r = await appStorage.get(key, true); DB[key] = r && r.value ? JSON.parse(r.value) : []; }
     catch(e){ DB[key] = []; }
   }
@@ -785,20 +818,20 @@ const ROLE_LABEL = {
 const ROLE_PERMS = {
   Admin: {
     home: 'dashboard',
-    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','campaigns','reports','users','settings'],
+    views: ['dashboard','orders','order-details','order-form','batches','batch-details','customers','customer-details','products','product-form','expenses','campaigns','reports','users','settings'],
     money: true,
     createOrder: true, editOrder: true, deleteOrder: true,
     manageCustomers: true, manageProducts: true,
-    manageUsers: true, manageSettings: true, manageExpenses: true, manageCampaigns: true,
+    manageUsers: true, manageSettings: true, manageExpenses: true, manageCampaigns: true, manageBatches: true,
     markItemDone: true, changeStatus: true
   },
   'Order Manager': {
     home: 'dashboard',
-    views: ['dashboard','orders','order-details','order-form','customers','customer-details','products','product-form','expenses','campaigns','reports'],
+    views: ['dashboard','orders','order-details','order-form','batches','batch-details','customers','customer-details','products','product-form','expenses','campaigns','reports'],
     money: true,
     createOrder: true, editOrder: true, deleteOrder: true,
     manageCustomers: true, manageProducts: true,
-    manageUsers: false, manageSettings: false, manageExpenses: true, manageCampaigns: true,
+    manageUsers: false, manageSettings: false, manageExpenses: true, manageCampaigns: true, manageBatches: true,
     markItemDone: true, changeStatus: true
   },
   Production: {
@@ -807,7 +840,7 @@ const ROLE_PERMS = {
     money: false,
     createOrder: false, editOrder: false, deleteOrder: false,
     manageCustomers: false, manageProducts: false,
-    manageUsers: false, manageSettings: false, manageExpenses: false, manageCampaigns: false,
+    manageUsers: false, manageSettings: false, manageExpenses: false, manageCampaigns: false, manageBatches: false,
     markItemDone: true, changeStatus: true
   }
 };
@@ -857,6 +890,8 @@ function applyRoleAccess(){
   if(btnNewExpense) btnNewExpense.style.display = p.manageExpenses ? '' : 'none';
   const btnNewCampaign = document.getElementById('btn-new-campaign');
   if(btnNewCampaign) btnNewCampaign.style.display = p.manageCampaigns ? '' : 'none';
+  const btnNewBatch = document.getElementById('btn-new-batch');
+  if(btnNewBatch) btnNewBatch.style.display = p.manageBatches ? '' : 'none';
 }
 async function getSession(){
   try{ const r = await localStorageBackend.get('session'); return r && r.value ? JSON.parse(r.value) : null; }catch(e){ return null; }
@@ -1043,6 +1078,10 @@ function campaignOrders(campaignId){ return DB.orders.filter(o=>o.campaignId===c
 function campaignItemsCount(campaignId){ return campaignOrders(campaignId).reduce((s,o)=>s+orderItems(o).length,0); }
 function campaignCostPerItem(c){ const n = campaignItemsCount(c.id); return n ? (Number(c.cost)||0)/n : 0; }
 function getCampaign(id){ return DB.campaigns.find(c=>c.id===id); }
+function getBatch(id){ return DB.batches.find(b=>b.id===id); }
+function batchOrders(batchId){ return DB.orders.filter(o=>o.batchId===batchId).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); }
+function batchItemsCount(batchId){ return batchOrders(batchId).reduce((s,o)=>s+orderItems(o).length,0); }
+function batchTotalSales(batchId){ return batchOrders(batchId).reduce((s,o)=>s+orderTotal(o),0); }
 function getCustomer(id){ return DB.customers.find(c=>c.id===id); }
 function customerOrders(id){ return DB.orders.filter(o=>o.customerId===id).sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt)); }
 function initials(name){ return (name||'?').trim().slice(0,1); }
@@ -1051,6 +1090,7 @@ function initials(name){ return (name||'?').trim().slice(0,1); }
 let editingOrderId = null, editingProductId = null;
 const PAGE_META = {
   dashboard:'dashboard', orders:'orders', 'order-details':'order-details', 'order-form':'order-form',
+  batches:'batches', 'batch-details':'batch-details',
   customers:'customers', 'customer-details':'customer-details', products:'products', 'product-form':'product-form',
   expenses:'expenses', campaigns:'campaigns', reports:'reports', users:'users', settings:'settings'
 };
@@ -1062,6 +1102,7 @@ function goTo(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   document.getElementById('view-'+view).classList.add('active');
   const navKey = (view==='order-details'||view==='order-form') ? 'orders'
+    : (view==='batch-details') ? 'batches'
     : (view==='customer-details') ? 'customers'
     : (view==='product-form') ? 'products'
     : view;
@@ -1069,6 +1110,7 @@ function goTo(view){
   closeSidebarMobile();
   if(view==='dashboard') renderDashboard();
   if(view==='orders') renderOrdersList();
+  if(view==='batches') renderBatchesList();
   if(view==='customers') renderCustomersList();
   if(view==='products') renderProductsList();
   if(view==='expenses') renderExpensesList();
@@ -1091,6 +1133,10 @@ const sidebar = document.getElementById('sidebar'), scrim = document.getElementB
 document.getElementById('hamburger').addEventListener('click', ()=>{ sidebar.classList.add('open'); scrim.classList.add('show'); });
 scrim.addEventListener('click', closeSidebarMobile);
 function closeSidebarMobile(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); }
+
+const scrollTopBtn = document.getElementById('scroll-top-btn');
+window.addEventListener('scroll', ()=>{ scrollTopBtn.classList.toggle('show', window.scrollY > 260); });
+scrollTopBtn.addEventListener('click', ()=>{ window.scrollTo({top:0, behavior:'instant'}); });
 document.getElementById('bell-btn').addEventListener('click', ()=>showToast('لا يوجد إشعارات جديدة'));
 
 /* ================= MODAL HELPERS ================= */
@@ -1355,7 +1401,7 @@ function renderOrderItemsForm(items){
   wrap.innerHTML = items.map((it,i)=>itemSectionHtml(it, i, items.length)).join('');
   wrap.querySelectorAll('.order-item-sec').forEach(bindItemSectionEvents);
 }
-async function openOrderForm(existingId){
+async function openOrderForm(existingId, presetBatchId){
   if(existingId){ if(!can('editOrder')) return denyAccess(); }
   else { if(!can('createOrder')) return denyAccess(); }
   editingOrderId = existingId || null;
@@ -1400,6 +1446,13 @@ async function openOrderForm(existingId){
       <option value="استلام من الورشة" ${o.shippingType==='استلام من الورشة'?'selected':''}>استلام من الورشة</option>
     </select></div>
     <div class="field"><label>سعر الشحن (معلومة فقط)</label><input id="f-shipprice" type="number" min="0" value="${o.shippingPrice??0}"></div>`;
+
+  const selectedBatchId = presetBatchId || o.batchId || '';
+  document.getElementById('of-batch-fields').innerHTML = `
+    <div class="field" style="margin-bottom:0;"><label>الطلبية</label><select id="f-batch">
+      <option value="">— بدون طلبية —</option>
+      ${DB.batches.slice().sort((a,b)=>new Date(b.date)-new Date(a.date)).map(b=>'<option value="'+b.id+'" '+(selectedBatchId===b.id?'selected':'')+'>'+b.name+'</option>').join('')}
+    </select></div>`;
 
   document.getElementById('of-other-fields').innerHTML = `
     <div class="field-row">
@@ -1484,6 +1537,7 @@ function readOrderForm(existing){
     shippingType: document.getElementById('f-shiptype').value, shippingPrice: Number(document.getElementById('f-shipprice').value)||0,
     source: document.getElementById('f-source').value || null,
     campaignId: document.getElementById('f-campaign').value || null,
+    batchId: document.getElementById('f-batch').value || null,
     status: document.getElementById('f-status').value, dueDate: document.getElementById('f-duedate').value,
     priority: normalizePriority(document.getElementById('f-priority').value),
     notes: document.getElementById('f-notes').value.trim(),
@@ -1593,6 +1647,7 @@ async function renderOrderDetails(id){
     <div class="kv"><span>العنوان</span><span>${c?c.address||'—':'—'}</span></div>
     <div class="kv"><span>مصدر العميل</span><span>${o.source?sourceLabel(o.source):'—'}</span></div>
     <div class="kv"><span>الحملة الإعلانية</span><span>${o.campaignId&&getCampaign(o.campaignId)?getCampaign(o.campaignId).name:'—'}</span></div>
+    <div class="kv"><span>الطلبية</span><span>${o.batchId&&getBatch(o.batchId)?getBatch(o.batchId).name:'—'}</span></div>
     ${c&&canView('customer-details')?'<button class="btn btn-ghost btn-sm" id="goto-customer" style="margin-top:10px;width:100%;">عرض بيانات العميل بالكامل</button>':''}`;
   if(c && canView('customer-details')) document.getElementById('goto-customer').onclick = ()=>{ renderCustomerDetails(c.id); goTo('customer-details'); };
 
@@ -2032,6 +2087,103 @@ function renderCampaignsList(){
     await persist('campaigns'); await persist('orders'); showToast('تم الحذف'); renderCampaignsList();
   }));
   renderPagination('campaigns-pagination', all.length, PER_PAGE, campaignsPage, p=>{ campaignsPage=p; renderCampaignsList(); });
+}
+
+/* ================= BATCHES / طلبيات ================= */
+document.getElementById('btn-new-batch').addEventListener('click', ()=>{ if(!can('manageBatches')) return denyAccess(); openBatchModal(null); });
+let batchSearchTerm='', batchesPage=1;
+document.getElementById('batches-search').addEventListener('input', e=>{ batchSearchTerm=e.target.value.trim(); batchesPage=1; renderBatchesList(); });
+function batchFormBody(x){
+  x = x||{};
+  return `<div class="field"><label>اسم / رقم الطلبية</label><input id="bf-name" value="${x.name||''}" placeholder="مثال: طلبية رقم 12"></div>
+    <div class="field"><label>التاريخ</label><input id="bf-date" type="date" value="${(x.date||todayISO()).slice(0,10)}"></div>
+    <div class="field" style="margin-bottom:0;"><label>ملاحظات</label><textarea id="bf-notes" placeholder="أي تفاصيل عن الطلبية...">${x.notes||''}</textarea></div>`;
+}
+function openBatchModal(existing){
+  if(!can('manageBatches')) return denyAccess();
+  openModal(existing?'تعديل الطلبية':'طلبية جديدة', batchFormBody(existing),
+    '<button class="btn btn-ghost" id="cancel">إلغاء</button><button class="btn btn-primary" id="save">حفظ</button>');
+  document.getElementById('cancel').onclick = closeModal;
+  document.getElementById('save').onclick = async ()=>{
+    const name = document.getElementById('bf-name').value.trim();
+    const date = document.getElementById('bf-date').value || todayISO().slice(0,10);
+    const notes = document.getElementById('bf-notes').value.trim();
+    if(!name){ showToast('من فضلك أدخل اسم أو رقم الطلبية'); return; }
+    if(existing){ Object.assign(existing, {name, date, notes}); }
+    else{ DB.batches.push({id:uid(), name, date, notes, createdAt:todayISO()}); }
+    await persist('batches'); closeModal(); showToast('تم الحفظ');
+    if(document.getElementById('view-batch-details').classList.contains('active') && existing) renderBatchDetails(existing.id);
+    else renderBatchesList();
+  };
+}
+function batchFilteredList(){
+  let list = DB.batches.slice().sort((a,b)=>new Date(b.date)-new Date(a.date));
+  if(batchSearchTerm){ const q=batchSearchTerm.toLowerCase(); list = list.filter(x=>(x.name||'').toLowerCase().includes(q)); }
+  return list;
+}
+function renderBatchesList(){
+  const all = batchFilteredList();
+  const list = all.slice((batchesPage-1)*PER_PAGE, batchesPage*PER_PAGE);
+  document.getElementById('batches-empty').style.display = all.length?'none':'block';
+  document.getElementById('batches-table').innerHTML = list.map(x=>{
+    const orders = batchOrders(x.id);
+    const itemsCount = batchItemsCount(x.id);
+    const total = batchTotalSales(x.id);
+    return `<tr>
+      <td class="clickable" data-view="${x.id}">${x.name}</td>
+      <td class="muted">${fmtDate(x.date)}</td>
+      <td class="num">${orders.length}</td>
+      <td class="num">${itemsCount}</td>
+      <td class="num money-only">${fmtMoney(total)}</td>
+      <td><div class="row-actions">
+        <button class="icon-action" data-view="${x.id}" title="عرض"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        <button class="icon-action" data-edit="${x.id}" title="تعديل"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>
+        <button class="icon-action danger" data-del="${x.id}" title="حذف"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  document.querySelectorAll('#batches-table [data-view]').forEach(el=>el.addEventListener('click', ()=>{ renderBatchDetails(el.dataset.view); goTo('batch-details'); }));
+  document.querySelectorAll('#batches-table [data-edit]').forEach(b=>b.addEventListener('click', (e)=>{ e.stopPropagation(); const x=DB.batches.find(c=>c.id===b.dataset.edit); if(x) openBatchModal(x); }));
+  document.querySelectorAll('#batches-table [data-del]').forEach(b=>b.addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    if(!confirm('متأكد إنك عايز تحذف الطلبية دي؟ الأوردرات المرتبطة بيها هتفضل موجودة بس من غير ربط بطلبية.')) return;
+    const bid = b.dataset.del;
+    DB.orders.forEach(o=>{ if(o.batchId===bid) o.batchId = null; });
+    DB.batches = DB.batches.filter(x=>x.id!==bid);
+    await persist('batches'); await persist('orders'); showToast('تم الحذف'); renderBatchesList();
+  }));
+  renderPagination('batches-pagination', all.length, PER_PAGE, batchesPage, p=>{ batchesPage=p; renderBatchesList(); });
+}
+function renderBatchDetails(id){
+  const x = getBatch(id); if(!x) return;
+  document.getElementById('bd-title').textContent = x.name;
+  document.getElementById('bd-crumb').textContent = x.name;
+  const orders = batchOrders(id);
+  const itemsCount = batchItemsCount(id);
+  const total = batchTotalSales(id);
+  document.getElementById('bd-body').innerHTML = `
+    <div class="kv"><span>الاسم / الرقم</span><span>${x.name}</span></div>
+    <div class="kv"><span>التاريخ</span><span>${fmtDate(x.date)}</span></div>
+    <div class="kv"><span>عدد الأوردرات</span><span>${orders.length}</span></div>
+    <div class="kv"><span>عدد البنود</span><span>${itemsCount}</span></div>
+    <div class="kv"><span>إجمالي المبيعات</span><span>${fmtMoney(total)}</span></div>
+    ${x.notes?`<div style="margin-top:10px;font-size:13px;line-height:1.7;color:var(--ink-soft);">${x.notes}</div>`:''}`;
+  const ordersList = document.getElementById('bd-orders');
+  if(!orders.length){ ordersList.innerHTML = '<div class="empty"><p>لا يوجد أوردرات في الطلبية دي بعد</p></div>'; }
+  else{
+    ordersList.innerHTML = orders.map(o=>`<div class="mini-card" data-id="${o.id}"><div><div class="name">${orderProductLabel(o)}</div><div class="meta">${fmtDate(o.createdAt)} · ${fmtMoney(orderTotal(o))}</div></div>${badge(o.status)}</div>`).join('');
+    ordersList.querySelectorAll('.mini-card').forEach(el=>el.addEventListener('click', ()=>{ renderOrderDetails(el.dataset.id); goTo('order-details'); }));
+  }
+  document.getElementById('bd-edit').onclick = ()=>openBatchModal(x);
+  document.getElementById('bd-delete').onclick = async ()=>{
+    if(!confirm('متأكد إنك عايز تحذف الطلبية دي؟ الأوردرات المرتبطة بيها هتفضل موجودة بس من غير ربط بطلبية.')) return;
+    DB.orders.forEach(o=>{ if(o.batchId===x.id) o.batchId = null; });
+    DB.batches = DB.batches.filter(b=>b.id!==x.id);
+    await persist('batches'); await persist('orders'); showToast('تم الحذف'); goTo('batches');
+  };
+  document.getElementById('bd-add-order').onclick = ()=>{ if(!can('createOrder')) return denyAccess(); openOrderForm(null, x.id); };
+  const btnAdd = document.getElementById('bd-add-order');
+  btnAdd.style.display = can('createOrder') ? '' : 'none';
 }
 
 /* ================= USERS ================= */
