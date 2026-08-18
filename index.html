@@ -558,13 +558,11 @@ body.perm-no-money .money-only{display:none !important;}
         <div class="page-head"><div><h1 id="bd-title">بيانات الطلبية</h1><div class="breadcrumb"><b>الرئيسية</b> &gt; <b>الطلبيات</b> &gt; <span id="bd-crumb"></span></div></div>
           <div style="display:flex;gap:8px;"><button class="btn btn-ghost" id="bd-edit">تعديل</button><button class="btn btn-danger" id="bd-delete">حذف</button></div>
         </div>
-        <div class="grid-2">
-          <div class="panel"><div class="card-title">بيانات الطلبية</div><div id="bd-body"></div></div>
-          <div class="panel">
-            <div class="card-title">أوردرات الطلبية</div>
-            <button class="btn btn-primary btn-sm" id="bd-add-order" style="margin:6px 0 12px;width:100%;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="vertical-align:-2px;margin-left:4px;"><path d="M12 5v14M5 12h14"/></svg>أضف أوردر للطلبية دي</button>
-            <div class="card-list" id="bd-orders"></div>
-          </div>
+        <div class="panel"><div class="card-title">بيانات الطلبية</div><div id="bd-body"></div></div>
+        <div class="panel" style="margin-top:16px;padding-top:6px;">
+          <div class="page-head" style="margin-bottom:10px;"><div class="card-title" style="margin:0;">أوردرات الطلبية</div><button class="btn btn-primary btn-sm" id="bd-add-order"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" style="vertical-align:-2px;margin-left:4px;"><path d="M12 5v14M5 12h14"/></svg>أضف أوردر للطلبية دي</button></div>
+          <div class="table-wrap"><table><thead><tr><th>#</th><th>العميل</th><th>الهاتف</th><th>المنتج</th><th class="money-only">الإجمالي</th><th>الأولوية</th><th>الحالة</th><th>تاريخ الطلب</th><th>إجراءات</th></tr></thead><tbody id="bd-orders"></tbody></table></div>
+          <div class="empty" id="bd-orders-empty" style="display:none;"><b>لا يوجد أوردرات في الطلبية دي بعد</b><p>أضف أول أوردر للطلبية دي من الزرار اللي فوق</p></div>
         </div>
       </section>
 
@@ -2168,12 +2166,39 @@ function renderBatchDetails(id){
     <div class="kv"><span>عدد البنود</span><span>${itemsCount}</span></div>
     <div class="kv"><span>إجمالي المبيعات</span><span>${fmtMoney(total)}</span></div>
     ${x.notes?`<div style="margin-top:10px;font-size:13px;line-height:1.7;color:var(--ink-soft);">${x.notes}</div>`:''}`;
-  const ordersList = document.getElementById('bd-orders');
-  if(!orders.length){ ordersList.innerHTML = '<div class="empty"><p>لا يوجد أوردرات في الطلبية دي بعد</p></div>'; }
-  else{
-    ordersList.innerHTML = orders.map(o=>`<div class="mini-card" data-id="${o.id}"><div><div class="name">${orderProductLabel(o)}</div><div class="meta">${fmtDate(o.createdAt)} · ${fmtMoney(orderTotal(o))}</div></div>${badge(o.status)}</div>`).join('');
-    ordersList.querySelectorAll('.mini-card').forEach(el=>el.addEventListener('click', ()=>{ renderOrderDetails(el.dataset.id); goTo('order-details'); }));
-  }
+  const tbody = document.getElementById('bd-orders');
+  document.getElementById('bd-orders-empty').style.display = orders.length? 'none':'block';
+  const canEdit = can('editOrder');
+  tbody.innerHTML = orders.map(o=>{
+    const c = getCustomer(o.customerId);
+    return `<tr>
+      <td class="muted num">#${o.id.slice(-4).toUpperCase()}</td>
+      <td class="clickable"><div class="cell-person"><div class="avatar" style="width:30px;height:30px;font-size:11px;">${initials(c?c.name:'?')}</div><div><div class="nm">${c?c.name:'—'}</div>${orderRemaining(o)>0?`<div class="sub" style="color:var(--amber);font-weight:700;">متبقي ${fmtMoney(orderRemaining(o))}</div>`:(o.deposit>0?'<div class="sub" style="color:var(--teal);font-weight:700;">مدفوع بالكامل</div>':'')}</div></div></td>
+      <td class="muted num">${c?c.phone:'—'}</td>
+      <td>${orderProductLabel(o)}</td>
+      <td class="num money-only">${fmtMoney(orderTotal(o))}${orderDiscountAmount(o)>0?`<div class="sub" style="color:var(--red);font-weight:700;">خصم ${o.discountType==='percent'?(o.discountValue+'%'):fmtMoney(orderDiscountAmount(o))}</div>`:''}</td>
+      <td>${priorityBadge(o.priority)}</td>
+      <td>${badge(o.status)}</td>
+      <td class="muted">${fmtDate(o.createdAt)}</td>
+      <td><div class="row-actions">
+        <button class="icon-action" data-view-id="${o.id}" title="عرض"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        ${canEdit?`<button class="icon-action" data-edit-id="${o.id}" title="تعديل"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button>`:''}
+        ${can('deleteOrder')?`<button class="icon-action danger" data-del-id="${o.id}" title="حذف"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/></svg></button>`:''}
+      </div></td>
+    </tr>`;
+  }).join('');
+  tbody.querySelectorAll('[data-view-id]').forEach(b=>b.addEventListener('click', ()=>{ renderOrderDetails(b.dataset.viewId); goTo('order-details'); }));
+  tbody.querySelectorAll('[data-edit-id]').forEach(b=>b.addEventListener('click', ()=>{ if(!can('editOrder')) return denyAccess(); openOrderForm(b.dataset.editId); }));
+  tbody.querySelectorAll('[data-del-id]').forEach(b=>b.addEventListener('click', async (e)=>{
+    e.stopPropagation();
+    if(!can('deleteOrder')) return denyAccess();
+    if(!confirm('متأكد إنك عايز تحذف الأوردر ده؟')) return;
+    const id = b.dataset.delId;
+    DB.orders = DB.orders.filter(x=>x.id!==id);
+    await persist('orders'); await deleteOrderImages(id);
+    showToast('تم حذف الأوردر'); renderBatchDetails(x.id);
+  }));
+  tbody.querySelectorAll('td:nth-child(2)').forEach((td,i)=>td.addEventListener('click', ()=>{ renderOrderDetails(orders[i].id); goTo('order-details'); }));
   document.getElementById('bd-edit').onclick = ()=>openBatchModal(x);
   document.getElementById('bd-delete').onclick = async ()=>{
     if(!confirm('متأكد إنك عايز تحذف الطلبية دي؟ الأوردرات المرتبطة بيها هتفضل موجودة بس من غير ربط بطلبية.')) return;
